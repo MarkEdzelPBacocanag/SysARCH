@@ -36,7 +36,7 @@
         <div class="loginform">
             <label for="id" >ID number: </label>
             <input type="text" id="id-number" name="id" placeholder="Enter valid ID number">
-            <lable for="password">Password: </lable>
+            <label for="password">Password: </lable>
             <input type="password" id="password" name="password" placeholder="Enter Password">
             <div style="display: inline-flex; justify-content: space-between; align-items: center; width: 100%;">
                 <div style="display: inline-flex; align-items: center; gap: 0.5rem;">
@@ -61,3 +61,4 @@
     <p>© 2026 College of Computer Studies</p>
 </footer>
 </html>
+
