@@ -1,0 +1,86 @@
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0px;
+    padding: 0px;
+}
+footer{
+    background-color: #5DA8DE;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.container-nav{
+    display: flex;
+    justify-content: space-between;
+    background-color: #5DA8DE;
+    align-items: center;
+}
+
+.container-logo-login{
+    margin: 2rem 2rem 2rem 2rem;
+    display: flex;
+    min-height: 81.5vh;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.loginform{
+    border-radius: 5px;
+    padding: 1rem;
+    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+    display: flex;
+    flex-direction: column;
+    height: 20rem;
+    width: 25rem;
+}
+.registerform{
+    border-radius: 5px;
+    padding: 1rem;
+    box-shadow: 0px 0px 5px 0px rgba(0,0,0,0.75);
+    display: flex;
+    flex-direction: column;
+}
+
+.name{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+img{
+    width: auto;
+    height: 700px;
+}
+.link-ref{
+    display: inline-flex;
+    justify-content: space-around;
+    width: 23rem;
+}
+
+a{
+    text-decoration: none;
+    color: black;
+}
+
+button{
+    background-color: #5DA8DE;
+    border: none;
+    padding: 0.5rem;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    height: 3rem;
+    width: 4rem;
+}
+
+input{
+    padding: 0.5rem;
+    margin: 0.5rem 0px;
+    height: 1.5rem;
+}
+.course-select{
+    padding: 0.5rem;
+    margin: 0.5rem 0px;
+    height: 2.5rem;
+}
