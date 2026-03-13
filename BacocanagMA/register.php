@@ -69,10 +69,21 @@ unset($_SESSION['errors'], $_SESSION['old']);
                     <?php endif; ?>
                 </div>
                 <div class="field-group" style="flex:1;">
-                    <label style="margin-right: 2rem; flex:1;" for="mname">Middle name: <small style="color: #7e7676b6;">(Optional)</small> </label>
+                    <label style="margin-right: 2rem;" for="mname">Middle name: <small style="color: #7e7676b6;">(Optional)</small> </label>
                     <input type="text" id="mname" name="mname" placeholder="Middle name" value="<?= htmlspecialchars($old['mname'] ?? '') ?>">
                 </div>
                 </div>
+            <div class="field-group">
+                <label for="course">Course: </label>
+                <select class="course-select" name="course" id="course">
+                    <option value="" disabled <?= empty($old['course']) ? 'selected':'' ?>>Select course</option>
+                    <option value="BSCS" <?= ($old['course'] ?? '')==='BSCS'?'selected':'' ?>>BSCS</option>
+                    <option value="BSIT" <?= ($old['course'] ?? '')==='BSIT'?'selected':'' ?>>BSIT</option>
+                </select>
+                <?php if (!empty($errors['course'])): ?>
+                    <span class="error-bubble"><?= htmlspecialchars($errors['course']) ?></span>
+                <?php endif; ?>
+            </div>
             <div class="field-group">
                 <label for="course-level">Course level: </label>
                 <select class="course-select" name="course_level" id="course-level">
@@ -111,17 +122,7 @@ unset($_SESSION['errors'], $_SESSION['old']);
                     <span class="error-bubble"><?= htmlspecialchars($errors['email']) ?></span>
                 <?php endif; ?>
             </div>
-            <div class="field-group">
-                <label for="course">Course: </label>
-                <select class="course-select" name="course" id="course">
-                    <option value="" disabled <?= empty($old['course']) ? 'selected':'' ?>>Select course</option>
-                    <option value="BSCS" <?= ($old['course'] ?? '')==='BSCS'?'selected':'' ?>>BSCS</option>
-                    <option value="BSIT" <?= ($old['course'] ?? '')==='BSIT'?'selected':'' ?>>BSIT</option>
-                </select>
-                <?php if (!empty($errors['course'])): ?>
-                    <span class="error-bubble"><?= htmlspecialchars($errors['course']) ?></span>
-                <?php endif; ?>
-            </div>
+ 
             <div class="field-group">
                 <label for="address">Address: </label>
                 <input type="text" id="address" name="address" placeholder="Address" value="<?= htmlspecialchars($old['address'] ?? '') ?>">

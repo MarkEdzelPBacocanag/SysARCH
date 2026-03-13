@@ -63,7 +63,7 @@ unset($_SESSION['errors'], $_SESSION['old']);
                 <a href="#">Forgot password?</a>
             </div>
             <div style="display: inline-flex; flex-direction: column;">  
-                <div style="margin: 0rem 50% 0rem 45%;">
+                <div style="margin: 0rem 50% 0rem 50%;">
                     <button type="submit">Login</button>
                 </div>
                 <div style="display: inline-flex; justify-content: space-between; margin-top: .5rem;">
