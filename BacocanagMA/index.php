@@ -1,3 +1,9 @@
+<?php
+session_start();
+$errors = $_SESSION['errors'] ?? [];
+$old = $_SESSION['old'] ?? [];
+unset($_SESSION['errors'], $_SESSION['old']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,10 +40,21 @@
     <div class = "container-logo-login">
         <img src="ccs.png">
         <div class="loginform">
-            <label for="id" >ID number: </label>
-            <input type="text" id="id-number" name="id" placeholder="Enter valid ID number">
-            <label for="password">Password: </lable>
-            <input type="password" id="password" name="password" placeholder="Enter Password">
+            <form method="post" action="login_process.php">
+            <div class="field-group">
+                <label for="id" >ID number: </label>
+                <input type="text" id="id-number" name="id" placeholder="Enter valid ID number" value="<?= htmlspecialchars($old['id'] ?? '') ?>">
+                <?php if (!empty($errors['id'])): ?>
+                    <span class="error-bubble"><?= htmlspecialchars($errors['id']) ?></span>
+                <?php endif; ?>
+            </div>
+            <div class="field-group">
+                <lable for="password">Password: </lable>
+                <input type="password" id="password" name="password" placeholder="Enter Password">
+                <?php if (!empty($errors['password'])): ?>
+                    <span class="error-bubble"><?= htmlspecialchars($errors['password']) ?></span>
+                <?php endif; ?>
+            </div>
             <div style="display: inline-flex; justify-content: space-between; align-items: center; width: 100%;">
                 <div style="display: inline-flex; align-items: center; gap: 0.5rem;">
                     <input type="checkbox" id="remember-me" name="remember-me">
@@ -45,14 +62,21 @@
                 </div>
                 <a href="#">Forgot password?</a>
             </div>
-            <div style="display: inline-flex; flex-direction: column; align-items: center;">
-            <button>Login</button>
-            <div style="display: inline-flex;">
-                <p>Don't have an account?</p>
-                <p>
-                    <a href="register.php">Register</a>
-                </p>
+            <div style="display: inline-flex; flex-direction: column;">  
+                <div style="margin: 0rem 50% 0rem 45%;">
+                    <button type="submit">Login</button>
+                </div>
+                <div style="display: inline-flex; justify-content: space-between; margin-top: .5rem;">
+                <div>
+                    <p>Don't have an account?</p>
+                </div>  
+                <div style="margin-right:40%;">
+                    <p>
+                        <a href="register.php">Register</a>
+                    </p>
+                </div>
             </div>
+            </form>
             </div>
         </div>
     </div>
@@ -61,4 +85,3 @@
     <p>© 2026 College of Computer Studies</p>
 </footer>
 </html>
-

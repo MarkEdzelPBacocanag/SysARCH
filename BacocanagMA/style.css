@@ -63,15 +63,13 @@ a{
 }
 
 button{
-    background-color: #5DA8DE;
-    border: none;
-    padding: 0.5rem;
+    background-color: #70b0dd;
+    border: 1px solid black;
+    padding: 1rem;
     border-radius: 5px;
     color: white;
     font-weight: bold;
     cursor: pointer;
-    height: 3rem;
-    width: 4rem;
 }
 
 input{
@@ -83,4 +81,25 @@ input{
     padding: 0.5rem;
     margin: 0.5rem 0px;
     height: 2.5rem;
+}
+
+/* container for a label+input pair so we can position error bubbles */
+.field-group{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+/* little bubble shown beside the field */
+.error-bubble{
+    position: absolute;
+    right: -0.5rem;
+    top: 50%;
+    transform: translateX(100%) translateY(-50%);
+    background: #f8d7da;
+    color: #721c24;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    white-space: nowrap;
 }
