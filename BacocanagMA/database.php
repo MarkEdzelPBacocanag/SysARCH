@@ -1,8 +1,11 @@
 <?php
+// ---- database.php ----
+// THIS IS NOW THE ONLY FILE WITH DATABASE CREDENTIALS
+
 $host = 'localhost';
-$db   = 'your_database_name';
-$user = 'your_username';
-$pass = 'your_password';
+$db   = 'mydatabest';      // <-- IMPORTANT: Use this database for everything
+$user = 'root';           // Your working username
+$pass = '';               // Your working password
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -15,6 +18,7 @@ $options = [
 try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
-    die('Database connection failed: ' . $e->getMessage());
+    // For a real application, you might want to log this error instead of showing it to the user.
+    error_log('Database Connection Error: ' . $e->getMessage());
+    die('Could not connect to the database. Please try again later.');
 }
-?>
