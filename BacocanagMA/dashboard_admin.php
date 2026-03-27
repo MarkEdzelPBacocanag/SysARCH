@@ -2,6 +2,8 @@
 session_start();
 require 'database.php'; // Connect to database
 
+$base = '/'.basename(dirname($_SERVER['SCRIPT_NAME'])).'/';
+
 // 1. Count Students
 $stmt = $pdo->query("SELECT COUNT(*) FROM students WHERE role = 'student'");
 $totalStudents = $stmt->fetchColumn();
@@ -104,7 +106,7 @@ $totalSitin = $totalSitIn; // Replace with actual query
                 </a>
             </div>
             <div name="Search">
-                <a href="#" data-modal-open="searchModal">
+                <a href="student.php" data-modal-open="searchModal">
                     <p>Search</p>
                 </a>
             </div>
@@ -357,9 +359,18 @@ $totalSitin = $totalSitIn; // Replace with actual query
                 <h3>Search Student</h3>
                 <button type="button" class="modal-close" data-modal-close>&times;</button>
             </div>
-            <form class="modal-body" method="GET" action="students.php">
-                <label for="searchQueryModal">Search by ID or Name</label>
-                <input type="text" id="searchQueryModal" name="search" placeholder="Enter ID or Name" required>
+
+            <!-- ACTION POINTS TO students.php which already exists -->
+            <form class="modal-body" method="GET" action="student.php">
+                <div class="field-group">
+                    <label for="searchQueryModal">Search by ID or Name:</label>
+                    <input type="text" 
+                        id="searchQueryModal" 
+                        name="search" 
+                        placeholder="Enter ID number or Student Name" 
+                        required 
+                        autofocus>
+                </div>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
                     <button type="submit" class="btn btn-primary">Search</button>

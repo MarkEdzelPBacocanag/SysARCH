@@ -75,7 +75,7 @@ $students = $stmt->fetchAll();
         </div>
         <div class="link-ref">
             <div><a href="dashboard_admin.php"><p>Home</p></a></div>
-            <div><a href="#" data-modal-open="searchModal"><p>Search</p></a></div>
+            <div><a href="student.php" data-modal-open="searchModal"><p>Search</p></a></div>
             <div><a href="student.php"><p>Students</p></a></div>
             <div class="dropdown">
                 <span>Sit-in ▾</span>
@@ -114,7 +114,7 @@ $students = $stmt->fetchAll();
         <!-- ENTRIES & SEARCH -->
         <div class="table-controls">
             <div class="entries-control">
-                <form method="GET" action="students.php" id="entriesForm">
+                <form method="GET" action="student.php" id="entriesForm">
                     <select name="entries" onchange="document.getElementById('entriesForm').submit();">
                         <option value="10" <?= $entries_per_page == 10 ? 'selected' : '' ?>>10</option>
                         <option value="25" <?= $entries_per_page == 25 ? 'selected' : '' ?>>25</option>
@@ -127,7 +127,7 @@ $students = $stmt->fetchAll();
             </div>
 
             <div class="search-control">
-                <form method="GET" action="students.php">
+                <form method="GET" action="student.php">
                     <label for="searchInput">Search:</label>
                     <input type="text" id="searchInput" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="ID, Name, Email...">
                     <input type="hidden" name="entries" value="<?= $entries_per_page ?>">
@@ -347,9 +347,9 @@ $students = $stmt->fetchAll();
                 <h3>Search Student</h3>
                 <button type="button" class="modal-close" data-modal-close>&times;</button>
             </div>
-            <form class="modal-body" method="GET" action="students.php">
-                <label for="searchQueryModal">Search by ID or Name</label>
-                <input type="text" id="searchQueryModal" name="search" placeholder="Enter ID or Name" required>
+            <form class="modal-body" method="GET" action="student.php">
+                <label for="searchQuery">Search by ID or Name</label>
+                <input type="text" id="searchQuery" name="search" placeholder="Enter ID or Name" required>
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
                     <button type="submit" class="btn btn-primary">Search</button>
