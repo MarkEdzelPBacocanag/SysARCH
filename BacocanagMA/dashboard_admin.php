@@ -2,7 +2,7 @@
 session_start();
 require 'database.php'; // Connect to database
 
-$base = '/'.basename(dirname($_SERVER['SCRIPT_NAME'])).'/';
+$base = '/' . basename(dirname($_SERVER['SCRIPT_NAME'])) . '/';
 
 // 1. Count Students
 $stmt = $pdo->query("SELECT COUNT(*) FROM students WHERE role = 'student'");
@@ -106,7 +106,7 @@ $totalSitin = $totalSitIn; // Replace with actual query
                 </a>
             </div>
             <div name="Search">
-                <a href="student.php" data-modal-open="searchModal">
+                <a href="search_results.php">
                     <p>Search</p>
                 </a>
             </div>
@@ -120,18 +120,27 @@ $totalSitin = $totalSitIn; // Replace with actual query
                 <ul class="dropdown-content">
                     <!-- Keep Start Sit-in as a modal if you like, or make it a page -->
                     <li><a data-modal-open="sitinModal">Add Sit-in</a></li>
-                    
+
                     <!-- Link to the new PHP files -->
                     <li><a href="sitin_records.php">View Sit-in Records</a></li>
                     <li><a href="sitin_reports.php">Sit-in Reports</a></li>
                 </ul>
             </div>
-            <div><a href="">Feedback Reports</a></div>
-            <div><a href="">Reservations</a></div>
+            <div><a href="feedback_reports.php">
+                    <p>Feedback Reports</p>
+                </a></div>
+            <div><a href="reservations.php">
+                    <p>Reservations</p>
+                </a></div>
             <button class="logout-button" type="button" onclick="window.location.href='index.php';">Log out</button>
         </div>
     </div>
 
+    <!-- TOAST NOTIFICATIONS -->
+    <div class="toast-container">
+        <?php if ($success): ?><div class="toast success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
+        <?php if ($error):   ?><div class="toast error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+    </div>
     <!-- MAIN DASHBOARD CONTENT -->
     <div class="dashboard-content">
 
@@ -150,11 +159,11 @@ $totalSitin = $totalSitIn; // Replace with actual query
                 <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
                     <!-- Canvas for Chart.js -->
                     <canvas id="sitinChart"></canvas>
-                <?php if (count($purposeData) === 0): ?>
-                    <p style="text-align: center; color: #666; margin-top: 10px;">
-                        No sit-in data yet. Start a sit-in to see statistics.
-                    </p>
-                <?php endif; ?>
+                    <?php if (count($purposeData) === 0): ?>
+                        <p style="text-align: center; color: #666; margin-top: 10px;">
+                            No sit-in data yet. Start a sit-in to see statistics.
+                        </p>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -166,59 +175,48 @@ $totalSitin = $totalSitIn; // Replace with actual query
             </div>
             <div style="padding: 1rem;">
                 <!-- Static Example of a Post (Fetch from DB later) -->
-                <?php if ($success): ?>
-                        <div style="background: #d4edda; color: #155724; padding: 10px; margin: 10px;">
-                            <?= htmlspecialchars($success) ?>
-                        </div>
-                    <?php endif; ?>
-                    <?php if ($error): ?>
-                        <div style="background: #f8d7da; color: #721c24; padding: 10px; margin: 10px;">
-                            <?= htmlspecialchars($error) ?>
-                        </div>
-                    <?php endif; ?>
-                    
-                    <div class="announcement-form">
-                        <form method="post" action="add_announcement.php">
-                            <textarea name="announcement" placeholder="Write a new announcement..." rows="3" required></textarea>
-                            <button type="submit" class="submit-button">📤 Post Announcement</button>
-                        </form>
-                    </div>
-                    
-                    <div class="posted-announcements">
-                        <h5>Recent Announcements</h5>
-                        <?php if (empty($announcements)): ?>
-                            <p style="text-align: center; color: #666; padding: 2rem;">No announcements yet.</p>
-                        <?php else: ?>
-                            <?php foreach ($announcements as $announcement): ?>
-                                <div class="announcement-item">
-                                    <div class="announcement-header">
-                                        <strong><?php echo htmlspecialchars($announcement['fname'] . ' ' . $announcement['lname']); ?></strong>
-                                        <span class="announcement-date">
-                                            <?php echo date('M d, Y h:i A', strtotime($announcement['created_at'])); ?>
-                                        </span>
-                                    </div>
-                                    <div class="announcement-content">
-                                        <?php echo nl2br(htmlspecialchars($announcement['content'])); ?>
-                                    </div>
-                                    <!-- Delete Button (Optional) -->
-                                    <div style="margin-top: 8px;">
-                                        <a href="delete_announcement.php?id=<?= $announcement['id'] ?>" 
+                <div class="announcement-form">
+                    <form method="post" action="add_announcement.php">
+                        <textarea name="announcement" placeholder="Write a new announcement..." rows="3" required></textarea>
+                        <button type="submit" class="submit-button">📤 Post Announcement</button>
+                    </form>
+                </div>
+
+                <div class="posted-announcements">
+                    <h5>Recent Announcements</h5>
+                    <?php if (empty($announcements)): ?>
+                        <p style="text-align: center; color: #666; padding: 2rem;">No announcements yet.</p>
+                    <?php else: ?>
+                        <?php foreach ($announcements as $announcement): ?>
+                            <div class="announcement-item">
+                                <div class="announcement-header">
+                                    <strong><?php echo htmlspecialchars($announcement['fname'] . ' ' . $announcement['lname']); ?></strong>
+                                    <span class="announcement-date">
+                                        <?php echo date('M d, Y h:i A', strtotime($announcement['created_at'])); ?>
+                                    </span>
+                                </div>
+                                <div class="announcement-content">
+                                    <?php echo nl2br(htmlspecialchars($announcement['content'])); ?>
+                                </div>
+                                <!-- Delete Button (Optional) -->
+                                <div style="margin-top: 8px;">
+                                    <a href="delete_announcement.php?id=<?= $announcement['id'] ?>"
                                         style="color: #dc3545; font-size: 0.85rem; text-decoration: none;"
                                         onclick="return confirm('Delete this announcement?')">
                                         🗑️ Delete
-                                        </a>
-                                    </div>
+                                    </a>
                                 </div>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
-            </div>  
+            </div>
         </div>
+    </div>
 
     </div>
 
-     <!-- ==================== MODALS ==================== -->
+    <!-- ==================== MODALS ==================== -->
 
     <!-- ADD STUDENT MODAL -->
     <div class="modal" id="addStudentModal" aria-hidden="true">
@@ -361,14 +359,14 @@ $totalSitin = $totalSitIn; // Replace with actual query
             </div>
 
             <!-- ACTION POINTS TO students.php which already exists -->
-            <form class="modal-body" method="GET" action="student.php">
+            <form class="modal-body" method="GET" action="search_results.php">
                 <div class="field-group">
                     <label for="searchQueryModal">Search by ID or Name:</label>
-                    <input type="text" 
-                        id="searchQueryModal" 
-                        name="search" 
-                        placeholder="Enter ID number or Student Name" 
-                        required 
+                    <input type="text"
+                        id="searchQueryModal"
+                        name="search"
+                        placeholder="Enter ID number or Student Name"
+                        required
                         autofocus>
                 </div>
                 <div class="modal-actions">
@@ -425,20 +423,6 @@ $totalSitin = $totalSitIn; // Replace with actual query
 
     <!-- JAVASCRIPT -->
     <script>
-        // Modal functions
-        function openModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) {
-                modal.classList.add('open');
-                modal.setAttribute('aria-hidden', 'false');
-            }
-        }
-
-        function closeModal(modal) {
-            modal.classList.remove('open');
-            modal.setAttribute('aria-hidden', 'true');
-        }
-
         // Event listeners for modals
         document.addEventListener('click', function(e) {
             // Open modal
@@ -473,35 +457,6 @@ $totalSitin = $totalSitIn; // Replace with actual query
             }
         });
 
-        // ESC key closes modals
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal.open').forEach(m => closeModal(m));
-            }
-        });
-
-        // Auto-fill student data for sit-in
-        const sitinIdInput = document.getElementById('sitinId');
-        if (sitinIdInput) {
-            sitinIdInput.addEventListener('blur', async function() {
-                const id = this.value.trim();
-                if (!id) return;
-                try {
-                    const res = await fetch(`get_student.php?id=${encodeURIComponent(id)}`);
-                    const data = await res.json();
-                    if (data.success) {
-                        document.getElementById('sitinName').value = data.name;
-                        document.getElementById('sitinRemaining').value = data.remaining_session;
-                    } else {
-                        document.getElementById('sitinName').value = 'Not found';
-                        document.getElementById('sitinRemaining').value = '';
-                    }
-                } catch (err) {
-                    console.error(err);
-                }
-            });
-        }
-
         // Confirm delete
         function confirmDelete(id) {
             if (confirm('Are you sure you want to delete student ID: ' + id + '?')) {
@@ -515,15 +470,15 @@ $totalSitin = $totalSitIn; // Replace with actual query
                 window.location.href = 'reset_sessions.php';
             }
         }
-            // JAVASCRIPT FOR PIE CHART
+        // JAVASCRIPT FOR PIE CHART
 
-            // Pass PHP data to JavaScript
+        // Pass PHP data to JavaScript
         document.addEventListener('DOMContentLoaded', function() {
-            
+
             // Check if Chart.js is loaded
             if (typeof Chart === 'undefined') {
                 console.error('Chart.js not loaded! Check your internet connection.');
-                document.querySelector('.chart-container').innerHTML = 
+                document.querySelector('.chart-container').innerHTML =
                     '<p style="color:red; text-align:center;">Chart library failed to load</p>';
                 return;
             }
@@ -536,7 +491,7 @@ $totalSitin = $totalSitIn; // Replace with actual query
 
             // Get the 2D context
             const context = ctx.getContext('2d');
-            
+
             // Destroy existing chart if any (prevents duplicates on AJAX reloads)
             if (window.myPieChart) {
                 window.myPieChart.destroy();
@@ -554,7 +509,7 @@ $totalSitin = $totalSitIn; // Replace with actual query
                             '#FF6384', // Red
                             '#FFCE56', // Yellow
                             '#4BC0C0', // Teal
-                            '#FF9F40'  // Orange
+                            '#FF9F40' // Orange
                         ],
                         borderWidth: 2,
                         borderColor: '#fff'
@@ -568,7 +523,9 @@ $totalSitin = $totalSitIn; // Replace with actual query
                             position: 'bottom',
                             labels: {
                                 padding: 10,
-                                font: { size: 11 }
+                                font: {
+                                    size: 11
+                                }
                             }
                         },
                         tooltip: {
@@ -585,7 +542,7 @@ $totalSitin = $totalSitIn; // Replace with actual query
                     }
                 }
             });
-            
+
             console.log('Chart loaded successfully with data:', <?= $chartCounts ?>);
         });
         // Modal open/close logic (from previous answer)
@@ -634,9 +591,12 @@ $totalSitin = $totalSitIn; // Replace with actual query
         });
 
         // --- AUTO-FILL STUDENT DATA ---
+        // --- AUTO-FILL STUDENT DATA & CHECK ACTIVE STATUS ---
         const idInput = document.getElementById('sitinId');
         const nameInput = document.getElementById('sitinName');
         const remainingInput = document.getElementById('sitinRemaining');
+        const sitinForm = document.getElementById('sitinForm'); // Reference the form
+        const submitBtn = sitinForm ? sitinForm.querySelector('button[type="submit"]') : null;
 
         if (idInput) {
             idInput.addEventListener('blur', async function() {
@@ -649,12 +609,34 @@ $totalSitin = $totalSitIn; // Replace with actual query
                     const data = await response.json();
 
                     if (data.success) {
-                        nameInput.value = data.name;
-                        remainingInput.value = data.remaining_session;
+                        // Check if student has active session
+                        if (data.has_active_session) {
+                            nameInput.value = data.name + ' (⚠️ Currently Active)';
+                            remainingInput.value = data.remaining_session;
+
+                            // Disable submit button to prevent duplicate
+                            if (submitBtn) {
+                                submitBtn.disabled = true;
+                                submitBtn.title = "Student is already in a session";
+                                submitBtn.style.opacity = "0.6";
+                                submitBtn.style.cursor = "not-allowed";
+                            }
+                        } else {
+                            nameInput.value = data.name;
+                            remainingInput.value = data.remaining_session;
+
+                            // Enable submit button
+                            if (submitBtn) {
+                                submitBtn.disabled = false;
+                                submitBtn.title = "";
+                                submitBtn.style.opacity = "1";
+                                submitBtn.style.cursor = "pointer";
+                            }
+                        }
                     } else {
                         nameInput.value = 'Student not found';
                         remainingInput.value = '';
-                        // Optional: alert('Student ID not found');
+                        if (submitBtn) submitBtn.disabled = true; // Disable if student not found
                     }
                 } catch (err) {
                     console.error('Error fetching student:', err);
@@ -705,4 +687,5 @@ $totalSitin = $totalSitIn; // Replace with actual query
         });
     </script>
 </body>
+
 </html>

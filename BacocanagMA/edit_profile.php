@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Handle profile picture upload
     $profilePicture = $student['profile_picture']; // Keep existing
-    
+
     if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] === UPLOAD_ERR_OK) {
         $file = $_FILES['profile_picture'];
         $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -78,9 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
                 // Delete old profile picture (except default)
-                if ($student['profile_picture'] && 
+                if (
+                    $student['profile_picture'] &&
                     $student['profile_picture'] !== 'default_profile.png' &&
-                    file_exists($uploadDir . $student['profile_picture'])) {
+                    file_exists($uploadDir . $student['profile_picture'])
+                ) {
                     unlink($uploadDir . $student['profile_picture']);
                 }
                 $profilePicture = $newFilename;
@@ -118,6 +120,7 @@ unset($_SESSION['errors']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -133,7 +136,7 @@ unset($_SESSION['errors']);
         .edit-profile-card {
             background: white;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
@@ -306,6 +309,7 @@ unset($_SESSION['errors']);
         }
     </style>
 </head>
+
 <body>
     <!-- NAVIGATION BAR -->
     <div class="container-nav">
@@ -331,40 +335,35 @@ unset($_SESSION['errors']);
             <div class="card-body">
 
                 <!-- Error Messages -->
-                <?php if (!empty($errors)): ?>
-                    <div class="error-list">
-                        <strong>Please fix the following errors:</strong>
-                        <ul>
-                            <?php foreach ($errors as $error): ?>
-                                <li><?= htmlspecialchars($error) ?></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-                <?php endif; ?>
+                <!-- TOAST NOTIFICATIONS -->
+                <div class="toast-container">
+                    <?php if ($success): ?><div class="toast success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
+                    <?php if ($error):   ?><div class="toast error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+                </div>
 
                 <form method="POST" action="edit_profile.php" enctype="multipart/form-data">
 
                     <!-- Profile Picture -->
                     <div class="profile-picture-section">
-                        <?php 
+                        <?php
                         $profilePic = $student['profile_picture'] ?? 'default_profile.png';
                         $profilePath = 'uploads/profiles/' . $profilePic;
                         if (!file_exists($profilePath) || empty($student['profile_picture'])) {
                             $profilePath = 'uploads/profiles/default_profile.png';
                         }
                         ?>
-                        <img src="<?= htmlspecialchars($profilePath) ?>" 
-                             alt="Profile Picture" 
-                             class="current-picture"
-                             id="previewImage"
-                             onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
+                        <img src="<?= htmlspecialchars($profilePath) ?>"
+                            alt="Profile Picture"
+                            class="current-picture"
+                            id="previewImage"
+                            onerror="this.src='https://via.placeholder.com/150?text=No+Photo'">
 
                         <div class="picture-upload">
                             <label for="profile_picture" class="upload-btn">📷 Change Photo</label>
-                            <input type="file" 
-                                   id="profile_picture" 
-                                   name="profile_picture" 
-                                   accept="image/jpeg,image/png,image/gif,image/webp">
+                            <input type="file"
+                                id="profile_picture"
+                                name="profile_picture"
+                                accept="image/jpeg,image/png,image/gif,image/webp">
                             <span class="filename-display" id="filenameDisplay">No file chosen</span>
                             <small>Max size: 5MB | JPG, PNG, GIF, WEBP</small>
                         </div>
@@ -373,10 +372,10 @@ unset($_SESSION['errors']);
                     <!-- ID Number (readonly) -->
                     <div class="field-group">
                         <label for="id">ID Number</label>
-                        <input type="text" 
-                               id="id" 
-                               value="<?= htmlspecialchars($student['id']) ?>" 
-                               readonly>
+                        <input type="text"
+                            id="id"
+                            value="<?= htmlspecialchars($student['id']) ?>"
+                            readonly>
                         <small>ID number cannot be changed</small>
                     </div>
 
@@ -384,29 +383,29 @@ unset($_SESSION['errors']);
                     <div class="form-row">
                         <div class="field-group">
                             <label for="fname">First Name *</label>
-                            <input type="text" 
-                                   id="fname" 
-                                   name="fname" 
-                                   value="<?= htmlspecialchars($student['fname']) ?>" 
-                                   required>
+                            <input type="text"
+                                id="fname"
+                                name="fname"
+                                value="<?= htmlspecialchars($student['fname']) ?>"
+                                required>
                         </div>
                         <div class="field-group">
                             <label for="lname">Last Name *</label>
-                            <input type="text" 
-                                   id="lname" 
-                                   name="lname" 
-                                   value="<?= htmlspecialchars($student['lname']) ?>" 
-                                   required>
+                            <input type="text"
+                                id="lname"
+                                name="lname"
+                                value="<?= htmlspecialchars($student['lname']) ?>"
+                                required>
                         </div>
                     </div>
 
                     <div class="field-group">
                         <label for="mname">Middle Name</label>
-                        <input type="text" 
-                               id="mname" 
-                               name="mname" 
-                               value="<?= htmlspecialchars($student['mname'] ?? '') ?>"
-                               placeholder="Optional">
+                        <input type="text"
+                            id="mname"
+                            name="mname"
+                            value="<?= htmlspecialchars($student['mname'] ?? '') ?>"
+                            placeholder="Optional">
                     </div>
 
                     <!-- Course & Year Level -->
@@ -432,38 +431,38 @@ unset($_SESSION['errors']);
                     <!-- Email -->
                     <div class="field-group">
                         <label for="email">Email Address *</label>
-                        <input type="email" 
-                               id="email" 
-                               name="email" 
-                               value="<?= htmlspecialchars($student['email']) ?>" 
-                               required>
+                        <input type="email"
+                            id="email"
+                            name="email"
+                            value="<?= htmlspecialchars($student['email']) ?>"
+                            required>
                     </div>
 
                     <!-- Address -->
                     <div class="field-group">
                         <label for="address">Address *</label>
-                        <input type="text" 
-                               id="address" 
-                               name="address" 
-                               value="<?= htmlspecialchars($student['address']) ?>" 
-                               required>
+                        <input type="text"
+                            id="address"
+                            name="address"
+                            value="<?= htmlspecialchars($student['address']) ?>"
+                            required>
                     </div>
 
                     <!-- Sessions (readonly) -->
                     <div class="field-group">
                         <label for="sessions">Remaining Sessions</label>
-                        <input type="text" 
-                               id="sessions" 
-                               value="<?= htmlspecialchars($student['remaining_session'] ?? 30) ?>" 
-                               readonly>
+                        <input type="text"
+                            id="sessions"
+                            value="<?= htmlspecialchars($student['remaining_session'] ?? 30) ?>"
+                            readonly>
                         <small>Sessions are managed by admin only</small>
                     </div>
 
                     <!-- Buttons -->
                     <div class="btn-row">
-                        <button type="button" 
-                                class="btn btn-secondary" 
-                                onclick="window.location.href='dashboard_student.php'">
+                        <button type="button"
+                            class="btn btn-secondary"
+                            onclick="window.location.href='dashboard_student.php'">
                             Cancel
                         </button>
                         <button type="submit" class="btn btn-primary">
@@ -497,4 +496,5 @@ unset($_SESSION['errors']);
         });
     </script>
 </body>
+
 </html>

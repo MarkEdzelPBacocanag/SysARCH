@@ -24,22 +24,23 @@ $offset = ($current_page - 1) * $entries_per_page;
 $search = $_GET['search'] ?? '';
 $search_param = "%$search%";
 
-// Count total students
+// Count total students (exclude admins)
 if ($search) {
-    $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM students WHERE id LIKE ? OR fname LIKE ? OR lname LIKE ? OR email LIKE ?");
+    $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM students WHERE role = 'student' AND (id LIKE ? OR fname LIKE ? OR lname LIKE ? OR email LIKE ?)");
     $count_stmt->execute([$search_param, $search_param, $search_param, $search_param]);
 } else {
-    $count_stmt = $pdo->query("SELECT COUNT(*) FROM students");
+    $count_stmt = $pdo->prepare("SELECT COUNT(*) FROM students WHERE role = 'student'");
+    $count_stmt->execute();
 }
 $total_students = $count_stmt->fetchColumn();
 $total_pages = ceil($total_students / $entries_per_page);
 
-// Fetch students
+// Fetch students (exclude admins)
 if ($search) {
-    $stmt = $pdo->prepare("SELECT id, fname, lname, mname, course, course_level, remaining_session 
-                           FROM students 
-                           WHERE id LIKE ? OR fname LIKE ? OR lname LIKE ? OR email LIKE ?
-                           ORDER BY id ASC 
+    $stmt = $pdo->prepare("SELECT id, fname, lname, mname, course, course_level, remaining_session
+                           FROM students
+                           WHERE role = 'student' AND (id LIKE ? OR fname LIKE ? OR lname LIKE ? OR email LIKE ?)
+                           ORDER BY id ASC
                            LIMIT ? OFFSET ?");
     $stmt->bindValue(1, $search_param, PDO::PARAM_STR);
     $stmt->bindValue(2, $search_param, PDO::PARAM_STR);
@@ -49,9 +50,10 @@ if ($search) {
     $stmt->bindValue(6, $offset, PDO::PARAM_INT);
     $stmt->execute();
 } else {
-    $stmt = $pdo->prepare("SELECT id, fname, lname, mname, course, course_level, remaining_session 
-                           FROM students 
-                           ORDER BY id ASC 
+    $stmt = $pdo->prepare("SELECT id, fname, lname, mname, course, course_level, remaining_session
+                           FROM students
+                           WHERE role = 'student'
+                           ORDER BY id ASC
                            LIMIT ? OFFSET ?");
     $stmt->bindValue(1, $entries_per_page, PDO::PARAM_INT);
     $stmt->bindValue(2, $offset, PDO::PARAM_INT);
@@ -61,12 +63,14 @@ $students = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Students Information</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <!-- NAVIGATION BAR -->
     <div class="container-nav">
@@ -74,19 +78,29 @@ $students = $stmt->fetchAll();
             <h2>College of Computer Studies Admin</h2>
         </div>
         <div class="link-ref">
-            <div><a href="dashboard_admin.php"><p>Home</p></a></div>
-            <div><a href="student.php" data-modal-open="searchModal"><p>Search</p></a></div>
-            <div><a href="student.php"><p>Students</p></a></div>
-            <div class="dropdown">
+            <div><a href="dashboard_admin.php">
+                    <p>Home</p>
+                </a></div>
+            <div><a href="search_results.php">
+                    <p>Search</p>
+                </a></div>
+            <div><a href="student.php">
+                    <p>Students</p>
+                </a></div>
+            <div class="dropdown" style="margin: 0px; padding: 0px;">
                 <span>Sit-in ▾</span>
                 <ul class="dropdown-content">
-                    <li><a href="#" data-modal-open="sitinModal">Add Sit-in</a></li>
+                    <li><a data-modal-open="sitinModal">Add Sit-in</a></li>
                     <li><a href="sitin_records.php">View Sit-in Records</a></li>
                     <li><a href="sitin_reports.php">Sit-in Reports</a></li>
                 </ul>
             </div>
-            <div><a href="feedback_reports.php">Feedback Reports</a></div>
-            <div><a href="reservations.php">Reservations</a></div>
+            <div><a href="feedback_reports.php">
+                    <p>Feedback Reports</p>
+                </a></div>
+            <div><a href="reservations.php">
+                    <p>Reservations</p>
+                </a></div>
             <button class="logout-button" type="button" onclick="window.location.href='logout.php';">Log out</button>
         </div>
     </div>
@@ -96,12 +110,11 @@ $students = $stmt->fetchAll();
         <h1 class="page-title">Students Information</h1>
 
         <!-- Success/Error Messages -->
-        <?php if ($success): ?>
-            <div class="alert alert-success"><?= htmlspecialchars($success) ?></div>
-        <?php endif; ?>
-        <?php if ($error): ?>
-            <div class="alert alert-error"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
+        <!-- TOAST NOTIFICATIONS -->
+        <div class="toast-container">
+            <?php if ($success): ?><div class="toast success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
+            <?php if ($error):   ?><div class="toast error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+        </div>
 
         <!-- ACTION BUTTONS -->
         <div class="table-actions">
@@ -150,8 +163,8 @@ $students = $stmt->fetchAll();
             <tbody>
                 <?php if (count($students) > 0): ?>
                     <?php foreach ($students as $row): ?>
-                        <?php 
-                            $full_name = trim($row['fname'] . ' ' . ($row['mname'] ? substr($row['mname'], 0, 1) . '. ' : '') . $row['lname']);
+                        <?php
+                        $full_name = trim($row['fname'] . ' ' . ($row['mname'] ? substr($row['mname'], 0, 1) . '. ' : '') . $row['lname']);
                         ?>
                         <tr>
                             <td><?= htmlspecialchars($row['id']) ?></td>
@@ -160,15 +173,15 @@ $students = $stmt->fetchAll();
                             <td><?= htmlspecialchars($row['course']) ?></td>
                             <td><?= htmlspecialchars($row['remaining_session'] ?? 30) ?></td>
                             <td class="action-buttons">
-                                <button class="btn btn-edit" 
-                                        data-modal-open="editStudentModal"
-                                        data-id="<?= htmlspecialchars($row['id']) ?>"
-                                        data-fname="<?= htmlspecialchars($row['fname']) ?>"
-                                        data-lname="<?= htmlspecialchars($row['lname']) ?>"
-                                        data-mname="<?= htmlspecialchars($row['mname']) ?>"
-                                        data-course="<?= htmlspecialchars($row['course']) ?>"
-                                        data-level="<?= htmlspecialchars($row['course_level']) ?>"
-                                        data-remaining="<?= htmlspecialchars($row['remaining_session'] ?? 30) ?>">
+                                <button class="btn btn-edit"
+                                    data-modal-open="editStudentModal"
+                                    data-id="<?= htmlspecialchars($row['id']) ?>"
+                                    data-fname="<?= htmlspecialchars($row['fname']) ?>"
+                                    data-lname="<?= htmlspecialchars($row['lname']) ?>"
+                                    data-mname="<?= htmlspecialchars($row['mname']) ?>"
+                                    data-course="<?= htmlspecialchars($row['course']) ?>"
+                                    data-level="<?= htmlspecialchars($row['course_level']) ?>"
+                                    data-remaining="<?= htmlspecialchars($row['remaining_session'] ?? 30) ?>">
                                     Edit
                                 </button>
                                 <button class="btn btn-delete" onclick="confirmDelete('<?= htmlspecialchars($row['id']) ?>')">Delete</button>
@@ -186,18 +199,18 @@ $students = $stmt->fetchAll();
         <!-- PAGINATION -->
         <div class="pagination-container">
             <span>Showing <?= $offset + 1 ?> to <?= min($offset + $entries_per_page, $total_students) ?> of <?= $total_students ?> entries</span>
-            
+
             <div class="pagination">
                 <?php if ($current_page > 1): ?>
                     <a href="?page=1&entries=<?= $entries_per_page ?>&search=<?= urlencode($search) ?>">«</a>
                     <a href="?page=<?= $current_page - 1 ?>&entries=<?= $entries_per_page ?>&search=<?= urlencode($search) ?>">‹</a>
                 <?php endif; ?>
-                
+
                 <?php for ($i = max(1, $current_page - 2); $i <= min($total_pages, $current_page + 2); $i++): ?>
-                    <a href="?page=<?= $i ?>&entries=<?= $entries_per_page ?>&search=<?= urlencode($search) ?>" 
-                       class="<?= $i == $current_page ? 'active' : '' ?>"><?= $i ?></a>
+                    <a href="?page=<?= $i ?>&entries=<?= $entries_per_page ?>&search=<?= urlencode($search) ?>"
+                        class="<?= $i == $current_page ? 'active' : '' ?>"><?= $i ?></a>
                 <?php endfor; ?>
-                
+
                 <?php if ($current_page < $total_pages): ?>
                     <a href="?page=<?= $current_page + 1 ?>&entries=<?= $entries_per_page ?>&search=<?= urlencode($search) ?>">›</a>
                     <a href="?page=<?= $total_pages ?>&entries=<?= $entries_per_page ?>&search=<?= urlencode($search) ?>">»</a>
@@ -339,25 +352,6 @@ $students = $stmt->fetchAll();
             </form>
         </div>
     </div>
-
-    <!-- SEARCH MODAL (reused) -->
-    <div class="modal" id="searchModal" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <h3>Search Student</h3>
-                <button type="button" class="modal-close" data-modal-close>&times;</button>
-            </div>
-            <form class="modal-body" method="GET" action="student.php">
-                <label for="searchQuery">Search by ID or Name</label>
-                <input type="text" id="searchQuery" name="search" placeholder="Enter ID or Name" required>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- SIT-IN MODAL (reused) -->
     <div class="modal" id="sitinModal" aria-hidden="true">
         <div class="modal-dialog">
@@ -496,4 +490,5 @@ $students = $stmt->fetchAll();
         }
     </script>
 </body>
+
 </html>
