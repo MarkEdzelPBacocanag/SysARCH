@@ -221,6 +221,8 @@ $students = $stmt->fetchAll();
 
     <!-- ==================== MODALS ==================== -->
 
+
+    
     <!-- ADD STUDENT MODAL -->
     <div class="modal" id="addStudentModal" aria-hidden="true">
         <div class="modal-dialog modal-lg">

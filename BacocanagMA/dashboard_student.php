@@ -52,6 +52,7 @@ $history = $stmt->fetchAll();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,7 +72,7 @@ $history = $stmt->fetchAll();
         .student-panel {
             background: white;
             border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             flex: 1;
             min-width: 300px;
@@ -265,6 +266,7 @@ $history = $stmt->fetchAll();
             .student-dashboard {
                 flex-direction: column;
             }
+
             .student-panel {
                 flex: none;
                 width: 100%;
@@ -272,6 +274,7 @@ $history = $stmt->fetchAll();
         }
     </style>
 </head>
+
 <body>
     <!-- NAVIGATION BAR -->
     <div class="container-nav">
@@ -283,7 +286,7 @@ $history = $stmt->fetchAll();
             <div><a href="notifications.php">Notifications</a></div>
             <div><a href="edit_profile.php">Edit Profile</a></div>
             <div><a href="student_history.php">History</a></div>
-            <div><a href="student_reservations.php">Reservations</a></div>
+            <button class="btn btn-primary" data-modal-open="reservationModal">🖥️ Reserve a PC</button>
             <button class="logout-button" type="button" onclick="window.location.href='logout.php';">Log out</button>
         </div>
     </div>
@@ -304,17 +307,17 @@ $history = $stmt->fetchAll();
             <div class="panel-body">
                 <div class="profile-section">
                     <!-- Profile Picture -->
-                    <?php 
+                    <?php
                     $profilePic = $student['profile_picture'] ?? 'default_profile.png';
                     $profilePath = 'uploads/profiles/' . $profilePic;
                     if (!file_exists($profilePath) || empty($student['profile_picture'])) {
                         $profilePath = 'uploads/profiles/default_profile.png';
                     }
                     ?>
-                    <img src="<?= htmlspecialchars($profilePath) ?>" 
-                         alt="Profile Picture" 
-                         class="profile-picture"
-                         onerror="this.src='https://via.placeholder.com/120?text=No+Photo'">
+                    <img src="<?= htmlspecialchars($profilePath) ?>"
+                        alt="Profile Picture"
+                        class="profile-picture"
+                        onerror="this.src='https://via.placeholder.com/120?text=No+Photo'">
 
                     <!-- Name -->
                     <div class="profile-name">
@@ -346,7 +349,7 @@ $history = $stmt->fetchAll();
                         </div>
                         <div class="info-item">
                             <span class="info-label">Sessions Left:</span>
-                            <?php 
+                            <?php
                             $sessions = $student['remaining_session'] ?? 30;
                             $badgeClass = 'session-badge';
                             if ($sessions <= 5) $badgeClass .= ' low';
@@ -372,7 +375,7 @@ $history = $stmt->fetchAll();
                     <?php foreach ($announcements as $ann): ?>
                         <div class="announcement-item">
                             <h4>
-                                <?= htmlspecialchars($ann['fname'] . ' ' . $ann['lname']) ?> 
+                                <?= htmlspecialchars($ann['fname'] . ' ' . $ann['lname']) ?>
                                 | <?= date('Y-M-d', strtotime($ann['created_at'])) ?>
                             </h4>
                             <p><?= nl2br(htmlspecialchars($ann['content'])) ?></p>
@@ -414,5 +417,168 @@ $history = $stmt->fetchAll();
         </div>
 
     </div>
+    <!-- RESERVATION MODAL -->
+    <div class="modal" id="reservationModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>🖥️ Reserve a Computer</h3>
+                <button type="button" class="modal-close" data-modal-close>&times;</button>
+            </div>
+            <form class="modal-body" method="POST" action="add_reservation.php" id="reservationForm">
+                <div class="form-row">
+                    <div class="field-group">
+                        <label for="resLab">Laboratory:</label>
+                        <select id="resLab" name="lab" class="course-select" required>
+                            <option value="" disabled selected>Select Lab</option>
+                            <option value="Lab 543">Lab 543</option>
+                            <option value="Lab 544">Lab 544</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="resPC">PC Number:</label>
+                        <select id="resPC" name="pc_number" class="course-select" required>
+                            <option value="" disabled selected>Select PC</option>
+                            <option value="PC-01">PC-01</option>
+                            <option value="PC-02">PC-02</option>
+                            <option value="PC-03">PC-03</option>
+                            <option value="PC-04">PC-04</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- LIVE STATUS BADGE -->
+                <div class="field-group">
+                    <label>PC Status:</label>
+                    <div id="pcStatusBadge" style="padding: 8px; border-radius: 5px; background: #e9ecef; text-align: center; font-weight: bold; color: #555;">
+                        Select Lab & PC to check status
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="resPurpose">Purpose:</label>
+                    <select id="resPurpose" name="purpose" class="course-select" required>
+                        <option value="" disabled selected>Select Purpose</option>
+                        <option value="C Programming">C Programming</option>
+                        <option value="C#">C#</option>
+                        <option value="Java">Java</option>
+                        <option value="ASP.Net">ASP.Net</option>
+                        <option value="Php">Php</option>
+                        <option value="Python">Python</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="field-group">
+                        <label for="resDate">Date:</label>
+                        <input type="date" id="resDate" name="reservation_date" class="course-select" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="resTime">Time:</label>
+                        <input type="time" id="resTime" name="reservation_time" class="course-select" required>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>Remaining Sessions:</label>
+                    <input type="number" id="resRemaining" name="remaining_session" readonly style="background:#f0f0f0;">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                    <button type="submit" id="submitReservation" class="btn btn-primary" disabled>Confirm Reservation</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Modal & Auto-fill Logic
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+
+            // Auto-fill remaining sessions when reservation modal opens
+            if (modalId === 'reservationModal') {
+                const remInput = document.getElementById('resRemaining');
+                if (remInput) {
+                    fetch(`get_student.php?id=<?= $_SESSION['user_id'] ?>`)
+                        .then(res => res.json())
+                        .then(data => {
+                            remInput.value = data.success ? data.remaining_session : 0;
+                        })
+                        .catch(() => remInput.value = 'Error loading');
+                }
+            }
+        }
+
+        function closeModal(modal) {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+        }
+
+        document.addEventListener('click', function(e) {
+            // Open
+            const openBtn = e.target.closest('[data-modal-open]');
+            if (openBtn) {
+                e.preventDefault();
+                openModal(openBtn.getAttribute('data-modal-open'));
+                return;
+            }
+            // Close via button or overlay
+            if (e.target.matches('[data-modal-close]') || e.target.classList.contains('modal')) {
+                closeModal(e.target.closest('.modal'));
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.open').forEach(m => closeModal(m));
+            }
+        });
+
+        // PC Status Checker
+        const resLab = document.getElementById('resLab');
+        const resPC = document.getElementById('resPC');
+        const pcStatusBadge = document.getElementById('pcStatusBadge');
+        const submitBtn = document.getElementById('submitReservation');
+
+        async function checkPCStatus() {
+            const lab = resLab.value;
+            const pc = resPC.value;
+            if (!lab || !pc) {
+                pcStatusBadge.style.background = '#e9ecef';
+                pcStatusBadge.textContent = 'Select Lab & PC to check status';
+                submitBtn.disabled = true;
+                return;
+            }
+
+            pcStatusBadge.style.background = '#e9ecef';
+            pcStatusBadge.textContent = 'Checking status...';
+
+            try {
+                const res = await fetch(`check_pc_status.php?lab=${encodeURIComponent(lab)}&pc=${encodeURIComponent(pc)}`);
+                const data = await res.json();
+
+                pcStatusBadge.textContent = `🟢 ${data.status}`;
+                pcStatusBadge.style.background = `${data.color}20`; // 20% opacity tint
+                pcStatusBadge.style.color = data.color;
+                pcStatusBadge.style.border = `2px solid ${data.color}`;
+
+                // Only allow booking if Available
+                submitBtn.disabled = data.status !== 'Available';
+            } catch (err) {
+                pcStatusBadge.textContent = 'Error checking status';
+                submitBtn.disabled = true;
+            }
+        }
+
+        resLab.addEventListener('change', checkPCStatus);
+        resPC.addEventListener('change', checkPCStatus);
+    </script>
 </body>
+
 </html>

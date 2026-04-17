@@ -333,16 +333,7 @@ unset($_SESSION['errors']);
                 <h2>✏️ Edit Your Profile</h2>
             </div>
             <div class="card-body">
-
-                <!-- Error Messages -->
-                <!-- TOAST NOTIFICATIONS -->
-                <div class="toast-container">
-                    <?php if ($success): ?><div class="toast success"><?= htmlspecialchars($success) ?></div><?php endif; ?>
-                    <?php if ($error):   ?><div class="toast error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
-                </div>
-
                 <form method="POST" action="edit_profile.php" enctype="multipart/form-data">
-
                     <!-- Profile Picture -->
                     <div class="profile-picture-section">
                         <?php

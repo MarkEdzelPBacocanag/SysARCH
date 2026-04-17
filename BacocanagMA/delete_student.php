@@ -1,7 +1,11 @@
 <?php
 session_start();
 require 'database.php';
-
+// (right after session_start() & require 'database.php')
+if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
+    header('Location: index.php');
+    exit;
+}
 $id = $_GET['id'] ?? '';
 
 if (empty($id)) {
@@ -20,4 +24,3 @@ try {
 
 header('Location: students.php');
 exit;
-?>
