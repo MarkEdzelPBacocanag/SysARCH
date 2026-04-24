@@ -96,7 +96,7 @@ $students = $stmt->fetchAll();
                 </ul>
             </div>
             <div><a href="feedback_reports.php">
-                    <p>Feedback Reports</p>
+                    <p>Feedback</p>
                 </a></div>
             <div><a href="reservations.php">
                     <p>Reservations</p>
@@ -220,9 +220,6 @@ $students = $stmt->fetchAll();
     </div>
 
     <!-- ==================== MODALS ==================== -->
-
-
-    
     <!-- ADD STUDENT MODAL -->
     <div class="modal" id="addStudentModal" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -354,7 +351,7 @@ $students = $stmt->fetchAll();
             </form>
         </div>
     </div>
-    <!-- SIT-IN MODAL (reused) -->
+    <!-- SIT-IN MODAL (Updated with Lab & PC Dropdowns) -->
     <div class="modal" id="sitinModal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-header">
@@ -382,10 +379,29 @@ $students = $stmt->fetchAll();
                         <option value="Python">Python</option>
                     </select>
                 </div>
-                <div class="field-group">
-                    <label for="sitinLab">Lab:</label>
-                    <input type="text" id="sitinLab" name="lab" placeholder="e.g. 524" required>
+
+                <!-- ✅ UPDATED: Lab & PC Dropdowns Side-by-Side -->
+                <div class="form-row">
+                    <div class="field-group">
+                        <label for="sitinLab">Laboratory:</label>
+                        <select id="sitinLab" name="lab" class="course-select" required>
+                            <option value="" disabled selected>Select Lab</option>
+                            <option value="Lab 543">Lab 543</option>
+                            <option value="Lab 544">Lab 544</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="sitinPC">PC Number:</label>
+                        <select id="sitinPC" name="pc_number" class="course-select" required>
+                            <option value="" disabled selected>Select PC</option>
+                            <?php
+                            for ($i = 1; $i <= 50; $i++): ?>
+                                <option value="PC-0<?= $i ?>">PC-<?= $i ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="field-group">
                     <label for="sitinRemaining">Remaining Session:</label>
                     <input type="number" id="sitinRemaining" name="remaining_session" readonly style="background:#f0f0f0;">

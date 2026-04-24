@@ -28,15 +28,19 @@ $feedbacks = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <title>Feedback Reports</title>
+    <title>Feedback</title>
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container-nav">
-        <div style="padding-left: 3rem;"><h2>Feedback Reports</h2></div>
-            <div class="link-ref">
+        <div style="padding-left: 3rem;">
+            <h2>Feedback</h2>
+        </div>
+        <div class="link-ref">
             <div name="home">
                 <a href="dashboard_admin.php">
                     <p>Home</p>
@@ -62,8 +66,12 @@ $feedbacks = $stmt->fetchAll();
                     <li><a href="sitin_reports.php">Sit-in Reports</a></li>
                 </ul>
             </div>
-            <div><a href="feedback_reports.php"><p>Feedback Reports</p></a></div>
-            <div><a href="reservations.php"><p>Reservations</p></a></div>
+            <div><a href="feedback_reports.php">
+                    <p>Feedback</p>
+                </a></div>
+            <div><a href="reservations.php">
+                    <p>Reservations</p>
+                </a></div>
             <button class="logout-button" type="button" onclick="window.location.href='index.php';">Log out</button>
         </div>
     </div>
@@ -81,39 +89,39 @@ $feedbacks = $stmt->fetchAll();
                 </tr>
             </thead>
             <tbody>
-            <?php if (count($feedbacks) > 0): ?>
-                <?php foreach ($feedbacks as $fb): ?>
+                <?php if (count($feedbacks) > 0): ?>
+                    <?php foreach ($feedbacks as $fb): ?>
+                        <tr>
+                            <td><?= date('M d, Y', strtotime($fb['created_at'])) ?></td>
+                            <td><?= htmlspecialchars($fb['fname'] . ' ' . $fb['lname']) ?></td>
+                            <td><?= htmlspecialchars($fb['message']) ?></td>
+                            <td>
+                                <span class="<?= $fb['status'] === 'resolved' ? 'alert-success' : 'alert-error' ?>" style="padding: 5px 10px; border-radius: 5px;">
+                                    <?= ucfirst($fb['status']) ?>
+                                </span>
+                            </td>
+                            <td>
+                                <form method="POST" style="margin:0;">
+                                    <input type="hidden" name="feedback_id" value="<?= $fb['id'] ?>">
+                                    <input type="hidden" name="update_status" value="1">
+                                    <input type="hidden" name="status" value="<?= $fb['status'] ?>">
+                                    <button type="submit" class="btn btn-secondary" style="padding: 5px 10px;">
+                                        <?= $fb['status'] === 'pending' ? 'Mark Resolved' : 'Re-open' ?>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
                     <tr>
-                        <td><?= date('M d, Y', strtotime($fb['created_at'])) ?></td>
-                        <td><?= htmlspecialchars($fb['fname'] . ' ' . $fb['lname']) ?></td>
-                        <td><?= htmlspecialchars($fb['message']) ?></td>
-                        <td>
-                            <span class="<?= $fb['status'] === 'resolved' ? 'alert-success' : 'alert-error' ?>" style="padding: 5px 10px; border-radius: 5px;">
-                                <?= ucfirst($fb['status']) ?>
-                            </span>
-                        </td>
-                        <td>
-                            <form method="POST" style="margin:0;">
-                                <input type="hidden" name="feedback_id" value="<?= $fb['id'] ?>">
-                                <input type="hidden" name="update_status" value="1">
-                                <input type="hidden" name="status" value="<?= $fb['status'] ?>">
-                                <button type="submit" class="btn btn-secondary" style="padding: 5px 10px;">
-                                    <?= $fb['status'] === 'pending' ? 'Mark Resolved' : 'Re-open' ?>
-                                </button>
-                            </form>
-                        </td>
+                        <td colspan="5" class="no-data">No feedback found.</td>
                     </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="5" class="no-data">No feedback found.</td>
-                </tr>
-            <?php endif; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 
-     <!-- ==================== MODALS ==================== -->
+    <!-- ==================== MODALS ==================== -->
 
     <!-- ADD STUDENT MODAL -->
     <div class="modal" id="addStudentModal" aria-hidden="true">
@@ -188,7 +196,7 @@ $feedbacks = $stmt->fetchAll();
             </form>
         </div>
     </div>
-    <!-- SIT-IN MODAL (reused) -->
+    <!-- SIT-IN MODAL (Updated with Lab & PC Dropdowns) -->
     <div class="modal" id="sitinModal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-header">
@@ -216,10 +224,29 @@ $feedbacks = $stmt->fetchAll();
                         <option value="Python">Python</option>
                     </select>
                 </div>
-                <div class="field-group">
-                    <label for="sitinLab">Lab:</label>
-                    <input type="text" id="sitinLab" name="lab" placeholder="e.g. 524" required>
+
+                <!-- ✅ UPDATED: Lab & PC Dropdowns Side-by-Side -->
+                <div class="form-row">
+                    <div class="field-group">
+                        <label for="sitinLab">Laboratory:</label>
+                        <select id="sitinLab" name="lab" class="course-select" required>
+                            <option value="" disabled selected>Select Lab</option>
+                            <option value="Lab 543">Lab 543</option>
+                            <option value="Lab 544">Lab 544</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="sitinPC">PC Number:</label>
+                        <select id="sitinPC" name="pc_number" class="course-select" required>
+                            <option value="" disabled selected>Select PC</option>
+                            <?php
+                            for ($i = 1; $i <= 50; $i++): ?>
+                                <option value="PC-0<?= $i ?>">PC-<?= $i ?></option>
+                            <?php endfor; ?>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="field-group">
                     <label for="sitinRemaining">Remaining Session:</label>
                     <input type="number" id="sitinRemaining" name="remaining_session" readonly style="background:#f0f0f0;">
@@ -310,7 +337,7 @@ $feedbacks = $stmt->fetchAll();
             });
         }
 
-                // Confirm delete
+        // Confirm delete
         function confirmDelete(id) {
             if (confirm('Are you sure you want to delete student ID: ' + id + '?')) {
                 window.location.href = 'delete_student.php?id=' + encodeURIComponent(id);
@@ -325,4 +352,5 @@ $feedbacks = $stmt->fetchAll();
         }
     </script>
 </body>
+
 </html>

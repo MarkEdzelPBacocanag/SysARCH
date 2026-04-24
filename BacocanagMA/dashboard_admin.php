@@ -72,7 +72,8 @@ if (count($purposeData) > 0) {
 
 // 1. Get Student Count
 try {
-    $stmt = $pdo->query("SELECT COUNT(*) FROM students");
+    // NEW CODE (Counts only where role is 'student')
+    $stmt = $pdo->query("SELECT COUNT(*) FROM students WHERE role = 'student'");
     $studentCount = $stmt->fetchColumn();
 } catch (PDOException $e) {
     $studentCount = 0;
@@ -127,9 +128,9 @@ $totalSitin = $totalSitIn; // Replace with actual query
                 </ul>
             </div>
             <div><a href="feedback_reports.php">
-                    <p>Feedback Reports</p>
+                    <p>Feedback</p>
                 </a></div>
-            <div><a href="reservations.php">
+            <div><a href="reservation.php">
                     <p>Reservations</p>
                 </a></div>
             <button class="logout-button" type="button" onclick="window.location.href='index.php';">Log out</button>
@@ -156,7 +157,7 @@ $totalSitin = $totalSitIn; // Replace with actual query
                     <p><strong>Total Sit-in:</strong> <?= $totalSitin; ?></p>
                 </div>
 
-                <div class="chart-container" style="position: relative; height: 300px; width: 100%;">
+                <div class="chart-container" style="position: relative; height: 300px; width: 100%; flex-direction: column;">
                     <!-- Canvas for Chart.js -->
                     <canvas id="sitinChart"></canvas>
                     <?php if (count($purposeData) === 0): ?>
@@ -350,34 +351,7 @@ $totalSitin = $totalSitIn; // Replace with actual query
         </div>
     </div>
 
-    <!-- SEARCH MODAL (reused) -->
-    <div class="modal" id="searchModal" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-header">
-                <h3>Search Student</h3>
-                <button type="button" class="modal-close" data-modal-close>&times;</button>
-            </div>
-
-            <!-- ACTION POINTS TO students.php which already exists -->
-            <form class="modal-body" method="GET" action="search_results.php">
-                <div class="field-group">
-                    <label for="searchQueryModal">Search by ID or Name:</label>
-                    <input type="text"
-                        id="searchQueryModal"
-                        name="search"
-                        placeholder="Enter ID number or Student Name"
-                        required
-                        autofocus>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
-                    <button type="submit" class="btn btn-primary">Search</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- SIT-IN MODAL (reused) -->
+    <!-- SIT-IN MODAL (Updated with Lab & PC Dropdowns) -->
     <div class="modal" id="sitinModal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-header">
@@ -405,10 +379,29 @@ $totalSitin = $totalSitIn; // Replace with actual query
                         <option value="Python">Python</option>
                     </select>
                 </div>
-                <div class="field-group">
-                    <label for="sitinLab">Lab:</label>
-                    <input type="text" id="sitinLab" name="lab" placeholder="e.g. 524" required>
+
+                <!-- UPDATED: Lab & PC Dropdowns Side-by-Side -->
+                <div class="form-row">
+                    <div class="field-group">
+                        <label for="sitinLab">Laboratory:</label>
+                        <select id="sitinLab" name="lab" class="course-select" required>
+                            <option value="" disabled selected>Select Lab</option>
+                            <option value="Lab 543">Lab 543</option>
+                            <option value="Lab 544">Lab 544</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="sitinPC">PC Number:</label>
+                        <select id="sitinPC" name="pc_number" class="course-select" required>
+                            <option value="" disabled selected>Select PC</option>
+                            <option value="PC-01">PC-01</option>
+                            <option value="PC-02">PC-02</option>
+                            <option value="PC-03">PC-03</option>
+                            <option value="PC-04">PC-04</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="field-group">
                     <label for="sitinRemaining">Remaining Session:</label>
                     <input type="number" id="sitinRemaining" name="remaining_session" readonly style="background:#f0f0f0;">
@@ -590,7 +583,6 @@ $totalSitin = $totalSitIn; // Replace with actual query
             }
         });
 
-        // --- AUTO-FILL STUDENT DATA ---
         // --- AUTO-FILL STUDENT DATA & CHECK ACTIVE STATUS ---
         const idInput = document.getElementById('sitinId');
         const nameInput = document.getElementById('sitinName');

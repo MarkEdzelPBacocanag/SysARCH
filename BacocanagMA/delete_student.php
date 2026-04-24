@@ -22,5 +22,5 @@ try {
     $_SESSION['error'] = 'Error: ' . $e->getMessage();
 }
 
-header('Location: students.php');
+header('Location: student.php');
 exit;

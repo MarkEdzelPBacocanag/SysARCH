@@ -2,6 +2,7 @@
 session_start();
 require 'database.php';
 
+// Check if student is logged in
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'student') {
     header('Location: index.php');
     exit;
@@ -9,19 +10,22 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'student') {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lab = trim($_POST['lab'] ?? '');
-    $pc_number = trim($_POST['pc_number'] ?? '');
     $purpose = trim($_POST['purpose'] ?? '');
     $date = $_POST['reservation_date'] ?? '';
     $time = $_POST['reservation_time'] ?? '';
+
     $student_id = $_SESSION['user_id'];
 
-    if (empty($lab) || empty($pc_number) || empty($purpose) || empty($date) || empty($time)) {
+    // Basic Validation
+    if (empty($lab) || empty($purpose) || empty($date) || empty($time)) {
         $_SESSION['error'] = 'All fields are required.';
         header('Location: dashboard_student.php');
         exit;
     }
 
     $reservation_datetime = $date . ' ' . $time;
+
+    // Ensure date is in the future
     if (strtotime($reservation_datetime) <= time()) {
         $_SESSION['error'] = 'Reservation date & time must be in the future.';
         header('Location: dashboard_student.php');
@@ -29,33 +33,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     try {
-        // 🔒 SERVER-SIDE PC STATUS CHECK
-        $stmt = $pdo->prepare("SELECT id FROM sitin_records WHERE lab = ? AND pc_number = ? AND status = 'active'");
-        $stmt->execute([$lab, $pc_number]);
-        if ($stmt->fetch()) {
-            $_SESSION['error'] = '❌ Cannot reserve: This PC is currently OCCUPIED.';
-            header('Location: dashboard_student.php');
-            exit;
-        }
-
-        // Check remaining sessions
+        // Check if student has remaining sessions
         $stmt = $pdo->prepare("SELECT remaining_session FROM students WHERE id = ?");
         $stmt->execute([$student_id]);
         $student = $stmt->fetch();
+
         if (!$student || $student['remaining_session'] <= 0) {
             $_SESSION['error'] = 'You have no remaining sessions available.';
             header('Location: dashboard_student.php');
             exit;
         }
 
-        // Insert reservation
-        $stmt = $pdo->prepare("INSERT INTO reservations (student_id, lab, pc_number, purpose, reservation_datetime, remaining_session, status) 
-                               VALUES (?, ?, ?, ?, ?, ?, 'pending')");
-        $stmt->execute([$student_id, $lab, $pc_number, $purpose, $reservation_datetime, $student['remaining_session']]);
+        // Insert Reservation with 'Unassigned' PC and 'pending' status
+        // We do NOT deduct the session here. Admin does it upon acceptance.
+        $stmt = $pdo->prepare("INSERT INTO reservations (student_id, lab, pc_number, purpose, reservation_datetime, status)
+                               VALUES (?, ?, 'Unassigned', ?, ?, 'pending')");
 
-        $_SESSION['success'] = '✅ Reservation submitted successfully!';
+        $stmt->execute([$student_id, $lab, $purpose, $reservation_datetime]);
+
+        $_SESSION['success'] = '✅ Reservation request submitted! Waiting for admin approval.';
     } catch (PDOException $e) {
-        $_SESSION['error'] = 'Failed to create reservation.';
+        $_SESSION['error'] = 'Failed to create reservation: ' . $e->getMessage();
         error_log('Reservation Error: ' . $e->getMessage());
     }
 }

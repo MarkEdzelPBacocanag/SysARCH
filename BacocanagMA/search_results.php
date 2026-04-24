@@ -89,11 +89,11 @@ if ($q) {
             </div>
             <div>
                 <a href="feedback_reports.php">
-                    <p>Feedback Reports</p>
+                    <p>Feedback</p>
                 </a>
             </div>
             <div>
-                <a href="reservations.php">
+                <a href="reservation.php">
                     <p>Reservations</p>
                 </a>
             </div>
@@ -109,7 +109,7 @@ if ($q) {
             <input type="text" name="q" placeholder="Enter Student ID, First Name, or Last Name..." value="<?= htmlspecialchars($q) ?>" required autofocus>
             <button type="submit" class="btn btn-primary">Search</button>
             <?php if ($q): ?>
-                <a href="search_results.php" class="btn btn-secondary" style="text-decoration:none; display:flex; align-items:center; height: 40px;">Clear</a>
+                <a href="search_results.php" class="btn btn-secondary" style="text-decoration:none; display:flex; align-items:center; height: 17px;">Clear</a>
             <?php endif; ?>
         </form>
 
@@ -160,7 +160,7 @@ if ($q) {
                 <p>🔍 Please enter a student's name or ID to begin searching.</p>
             </div>
         <?php endif; ?>
-        <!-- SIT-IN MODAL (reused) -->
+        <!-- SIT-IN MODAL (Updated with Lab & PC Dropdowns) -->
         <div class="modal" id="sitinModal" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-header">
@@ -188,10 +188,29 @@ if ($q) {
                             <option value="Python">Python</option>
                         </select>
                     </div>
-                    <div class="field-group">
-                        <label for="sitinLab">Lab:</label>
-                        <input type="text" id="sitinLab" name="lab" placeholder="e.g. 524" required>
+
+                    <!-- ✅ UPDATED: Lab & PC Dropdowns Side-by-Side -->
+                    <div class="form-row">
+                        <div class="field-group">
+                            <label for="sitinLab">Laboratory:</label>
+                            <select id="sitinLab" name="lab" class="course-select" required>
+                                <option value="" disabled selected>Select Lab</option>
+                                <option value="Lab 543">Lab 543</option>
+                                <option value="Lab 544">Lab 544</option>
+                            </select>
+                        </div>
+                        <div class="field-group">
+                            <label for="sitinPC">PC Number:</label>
+                            <select id="sitinPC" name="pc_number" class="course-select" required>
+                                <option value="" disabled selected>Select PC</option>
+                                <?php
+                                for ($i = 1; $i <= 50; $i++): ?>
+                                    <option value="PC-0<?= $i ?>">PC-<?= $i ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
                     </div>
+
                     <div class="field-group">
                         <label for="sitinRemaining">Remaining Session:</label>
                         <input type="number" id="sitinRemaining" name="remaining_session" readonly style="background:#f0f0f0;">

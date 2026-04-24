@@ -265,7 +265,6 @@ unset($_SESSION['errors']);
 
         .btn {
             flex: 1;
-            padding: 12px;
             border: none;
             border-radius: 5px;
             font-size: 1rem;
@@ -321,7 +320,7 @@ unset($_SESSION['errors']);
             <div><a href="notifications.php">Notifications</a></div>
             <div><a href="edit_profile.php">Edit Profile</a></div>
             <div><a href="student_history.php">History</a></div>
-            <div><a href="student_reservations.php">Reservations</a></div>
+            <button class="btn btn-primary" data-modal-open="reservationModal">🖥️ Reserve a PC</button>
             <button class="logout-button" type="button" onclick="window.location.href='logout.php';">Log out</button>
         </div>
     </div>
@@ -464,8 +463,168 @@ unset($_SESSION['errors']);
             </div>
         </div>
     </div>
+    <!---Modals--->
+    <!-- RESERVATION MODAL -->
+    <div class="modal" id="reservationModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>🖥️ Reserve a Computer</h3>
+                <button type="button" class="modal-close" data-modal-close>&times;</button>
+            </div>
+            <form class="modal-body" method="POST" action="add_reservation.php" id="reservationForm">
+                <div class="form-row">
+                    <div class="field-group">
+                        <label for="resLab">Laboratory:</label>
+                        <select id="resLab" name="lab" class="course-select" required>
+                            <option value="" disabled selected>Select Lab</option>
+                            <option value="Lab 543">Lab 543</option>
+                            <option value="Lab 544">Lab 544</option>
+                        </select>
+                    </div>
+                    <div class="field-group">
+                        <label for="resPC">PC Number:</label>
+                        <select id="resPC" name="pc_number" class="course-select" required>
+                            <option value="" disabled selected>Select PC</option>
+                            <?php for ($i = 1; $i <= 50; $i++): ?>
+                                <option value="PC-0<?= $i ?>">PC-<?= $i ?></option>
+                            <?php endfor; ?>
+                        </select>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- LIVE STATUS BADGE -->
+                <div class="field-group">
+                    <label>PC Status:</label>
+                    <div id="pcStatusBadge" style="padding: 8px; border-radius: 5px; background: #e9ecef; text-align: center; font-weight: bold; color: #555;">
+                        Select Lab & PC to check status
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label for="resPurpose">Purpose:</label>
+                    <select id="resPurpose" name="purpose" class="course-select" required>
+                        <option value="" disabled selected>Select Purpose</option>
+                        <option value="C Programming">C Programming</option>
+                        <option value="C#">C#</option>
+                        <option value="Java">Java</option>
+                        <option value="ASP.Net">ASP.Net</option>
+                        <option value="Php">Php</option>
+                        <option value="Python">Python</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="field-group">
+                        <label for="resDate">Date:</label>
+                        <input type="date" id="resDate" name="reservation_date" class="course-select" required>
+                    </div>
+                    <div class="field-group">
+                        <label for="resTime">Time:</label>
+                        <input type="time" id="resTime" name="reservation_time" class="course-select" required>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <label>Remaining Sessions:</label>
+                    <input type="number" id="resRemaining" readonly style="background:#f0f0f0;">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                    <button type="submit" id="submitReservation" class="btn btn-primary" disabled>Submit Request</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
+        // Modal & Auto-fill Logic
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (!modal) return;
+            modal.classList.add('open');
+            modal.setAttribute('aria-hidden', 'false');
+
+            // Auto-fill remaining sessions when reservation modal opens
+            if (modalId === 'reservationModal') {
+                const remInput = document.getElementById('resRemaining');
+                if (remInput) {
+                    fetch(`get_student.php?id=<?= $_SESSION['user_id'] ?>`)
+                        .then(res => res.json())
+                        .then(data => {
+                            remInput.value = data.success ? data.remaining_session : 0;
+                        })
+                        .catch(() => remInput.value = 'Error loading');
+                }
+            }
+        }
+
+        function closeModal(modal) {
+            modal.classList.remove('open');
+            modal.setAttribute('aria-hidden', 'true');
+            const form = modal.querySelector('form');
+            if (form) form.reset();
+        }
+
+        document.addEventListener('click', function(e) {
+            // Open
+            const openBtn = e.target.closest('[data-modal-open]');
+            if (openBtn) {
+                e.preventDefault();
+                openModal(openBtn.getAttribute('data-modal-open'));
+                return;
+            }
+            // Close via button or overlay
+            if (e.target.matches('[data-modal-close]') || e.target.classList.contains('modal')) {
+                closeModal(e.target.closest('.modal'));
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.open').forEach(m => closeModal(m));
+            }
+        });
+
+        // PC Status Checker
+        const resLab = document.getElementById('resLab');
+        const resPC = document.getElementById('resPC');
+        const pcStatusBadge = document.getElementById('pcStatusBadge');
+        const submitBtn = document.getElementById('submitReservation');
+
+        async function checkPCStatus() {
+            const lab = resLab.value;
+            const pc = resPC.value;
+            if (!lab || !pc) {
+                pcStatusBadge.style.background = '#e9ecef';
+                pcStatusBadge.textContent = 'Select Lab & PC to check status';
+                submitBtn.disabled = true;
+                return;
+            }
+
+            pcStatusBadge.style.background = '#e9ecef';
+            pcStatusBadge.textContent = 'Checking status...';
+
+            try {
+                const res = await fetch(`check_pc_status.php?lab=${encodeURIComponent(lab)}&pc=${encodeURIComponent(pc)}`);
+                const data = await res.json();
+
+                pcStatusBadge.textContent = `${data.status}`;
+                pcStatusBadge.style.background = `${data.color}20`; // 20% opacity tint
+                pcStatusBadge.style.color = data.color;
+                pcStatusBadge.style.border = `2px solid ${data.color}`;
+
+                // Only allow booking if Available
+                submitBtn.disabled = data.status !== 'Available';
+            } catch (err) {
+                pcStatusBadge.textContent = 'Error checking status';
+                submitBtn.disabled = true;
+            }
+        }
+
+        resLab.addEventListener('change', checkPCStatus);
+        resPC.addEventListener('change', checkPCStatus);
         // Preview image before upload
         document.getElementById('profile_picture').addEventListener('change', function(e) {
             const file = e.target.files[0];

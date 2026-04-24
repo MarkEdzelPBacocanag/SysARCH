@@ -48,6 +48,24 @@ $stmt = $pdo->prepare("SELECT * FROM sitin_records
                        ORDER BY date_created DESC");
 $stmt->execute([$_SESSION['user_id']]);
 $history = $stmt->fetchAll();
+
+$yearLevel = intval($student['course_level']);
+switch ($yearLevel) {
+    case 1:
+        $yearLabel = '1st year';
+        break;
+    case 2:
+        $yearLabel = '2nd year';
+        break;
+    case 3:
+        $yearLabel = '3rd year';
+        break;
+    case 4:
+        $yearLabel = '4th year';
+        break;
+    default:
+        $yearLabel = $yearLevel > 0 ? $yearLevel . 'th year' : 'N/A';
+}
 ?>
 
 <!DOCTYPE html>
@@ -337,7 +355,7 @@ $history = $stmt->fetchAll();
                         </div>
                         <div class="info-item">
                             <span class="info-label">Year Level:</span>
-                            <span class="info-value"><?= htmlspecialchars($student['course_level']) ?> Year</span>
+                            <span class="info-value"><?= htmlspecialchars($yearLabel) ?></span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">Email:</span>
@@ -417,7 +435,7 @@ $history = $stmt->fetchAll();
         </div>
 
     </div>
-    <!-- RESERVATION MODAL -->
+    <!-- RESERVATION MODAL (Synced) -->
     <div class="modal" id="reservationModal" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-header">
@@ -438,10 +456,9 @@ $history = $stmt->fetchAll();
                         <label for="resPC">PC Number:</label>
                         <select id="resPC" name="pc_number" class="course-select" required>
                             <option value="" disabled selected>Select PC</option>
-                            <option value="PC-01">PC-01</option>
-                            <option value="PC-02">PC-02</option>
-                            <option value="PC-03">PC-03</option>
-                            <option value="PC-04">PC-04</option>
+                            <?php for ($i = 1; $i <= 50; $i++): ?>
+                                <option value="PC-<?= $i < 10 ? '0' : '' ?><?= $i ?>">PC-<?= $i < 10 ? '0' : '' ?><?= $i ?></option>
+                            <?php endfor; ?>
                         </select>
                     </div>
                 </div>
@@ -480,12 +497,12 @@ $history = $stmt->fetchAll();
 
                 <div class="field-group">
                     <label>Remaining Sessions:</label>
-                    <input type="number" id="resRemaining" name="remaining_session" readonly style="background:#f0f0f0;">
+                    <input type="number" id="resRemaining" readonly style="background:#f0f0f0;">
                 </div>
 
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
-                    <button type="submit" id="submitReservation" class="btn btn-primary" disabled>Confirm Reservation</button>
+                    <button type="submit" id="submitReservation" class="btn btn-primary" disabled>Submit Request</button>
                 </div>
             </form>
         </div>
@@ -563,7 +580,7 @@ $history = $stmt->fetchAll();
                 const res = await fetch(`check_pc_status.php?lab=${encodeURIComponent(lab)}&pc=${encodeURIComponent(pc)}`);
                 const data = await res.json();
 
-                pcStatusBadge.textContent = `🟢 ${data.status}`;
+                pcStatusBadge.textContent = `${data.status}`;
                 pcStatusBadge.style.background = `${data.color}20`; // 20% opacity tint
                 pcStatusBadge.style.color = data.color;
                 pcStatusBadge.style.border = `2px solid ${data.color}`;

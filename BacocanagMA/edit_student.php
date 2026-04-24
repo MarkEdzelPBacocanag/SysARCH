@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id']) || ($_SESSION['role'] ?? '') !== 'admin') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header('Location: students.php');
+    header('Location: student.php');
     exit;
 }
 
@@ -21,7 +21,7 @@ $remaining = $_POST['remaining_session'] ?? 30;
 
 if (empty($id)) {
     $_SESSION['error'] = 'Invalid student ID';
-    header('Location: students.php');
+    header('Location: student.php');
     exit;
 }
 
@@ -33,5 +33,5 @@ try {
     $_SESSION['error'] = 'Error: ' . $e->getMessage();
 }
 
-header('Location: students.php');
+header('Location: student.php');
 exit;
