@@ -17,15 +17,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             $pdo->beginTransaction();
 
             if ($action === 'accept') {
-                // 1. Get details to create Sit-in record
+                // 1. Get reservation details
                 $stmt = $pdo->prepare("SELECT student_id, pc_number, purpose, lab FROM reservations WHERE id = ?");
                 $stmt->execute([$res_id]);
                 $res = $stmt->fetch();
 
                 if ($res) {
-                    // 2. Check if PC is occupied (just in case)
-                    $stmt = $pdo->prepare("SELECT id FROM sitin_records WHERE pc_number = ? AND status = 'active' LIMIT 1");
-                    $stmt->execute([$res['pc_number']]);
+                    // PREVENT: Student already has active/pending session
+                    $stmt = $pdo->prepare("SELECT id FROM sitin_records WHERE student_id = ? AND status IN ('active', 'pending') LIMIT 1");
+                    $stmt->execute([$res['student_id']]);
+                    if ($stmt->fetch()) throw new Exception('Student already has an active or pending session.');
+                    // 2. Check if PC is already occupied IN THE SAME LAB
+                    $stmt = $pdo->prepare("SELECT id FROM sitin_records WHERE lab = ? AND pc_number = ? AND status = 'active' LIMIT 1");
+                    $stmt->execute([$res['lab'], $res['pc_number']]);
 
                     if (!$stmt->fetch()) {
                         // 3. Update Reservation to Confirmed
@@ -36,11 +40,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                         $stmt = $pdo->prepare("UPDATE students SET remaining_session = remaining_session - 1 WHERE id = ?");
                         $stmt->execute([$res['student_id']]);
 
-                        // ✅ NEW: Create Sit-in Record (Status: Pending)
+                        // 5. Create Sit-in Record (Status: Pending)
                         $stmt = $pdo->prepare("INSERT INTO sitin_records (student_id, purpose, lab, pc_number, date_created, status) VALUES (?, ?, ?, ?, NOW(), 'pending')");
                         $stmt->execute([$res['student_id'], $res['purpose'], $res['lab'], $res['pc_number']]);
 
-                        $_SESSION['success'] = '✅ Reservation accepted & added to Sit-in Records.';
+                        // ✅ NEW: Send Notification to Student
+                        $stmt = $pdo->prepare("INSERT INTO notifications (student_id, title, message, type) VALUES (?, ?, ?, 'reservation')");
+                        $stmt->execute([
+                            $res['student_id'],
+                            "✅ Reservation Approved!",
+                            "Your reservation for {$res['lab']} / {$res['pc_number']} has been approved. Please proceed to the lab to start your session."
+                        ]);
+
+                        $_SESSION['success'] = '✅ Reservation accepted & notification sent to student.';
                     } else {
                         $_SESSION['error'] = '❌ Cannot accept: This PC is already occupied.';
                     }
@@ -69,6 +81,7 @@ $reservations = $stmt->fetchAll();
 
 $success = $_SESSION['success'] ?? '';
 $error = $_SESSION['error'] ?? '';
+
 unset($_SESSION['success'], $_SESSION['error']);
 ?>
 <!DOCTYPE html>
@@ -83,23 +96,20 @@ unset($_SESSION['success'], $_SESSION['error']);
 <body>
     <div class="container-nav">
         <div style="padding-left: 3rem;">
-            <h2>College of Computer Studies Admin</h2>
+            <h2>Student Reservations</h2>
         </div>
         <div class="link-ref">
             <a href="dashboard_admin.php">
                 <p>Home</p>
             </a>
-            <a href="search_results.php">
-                <p>Search</p>
-            </a>
             <a href="student.php">
                 <p>Students</p>
             </a>
-            <div class="dropdown">
+            <div class="dropdown" style="margin: 0; padding: 0;">
                 <span>Sit-in ▾</span>
                 <ul class="dropdown-content">
                     <li><a data-modal-open="sitinModal">Add Sit-in</a></li>
-                    <li><a href="sitin_records.php">View Sit-in Records</a></li>
+                    <li><a href="sitin_records.php">Sit-in Records</a></li>
                     <li><a href="sitin_reports.php">Sit-in Reports</a></li>
                 </ul>
             </div>

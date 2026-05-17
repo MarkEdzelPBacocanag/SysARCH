@@ -148,7 +148,7 @@ if (($_SESSION['role'] ?? '') === 'student') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏆 Student Leaderboard</title>
+    <title>Student Leaderboard</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .leaderboard-container {
@@ -321,23 +321,29 @@ if (($_SESSION['role'] ?? '') === 'student') {
     <!-- NAVIGATION -->
     <div class="container-nav">
         <div style="padding-left: 3rem;">
-            <h2>🏆 Student Dashboard</h2>
+            <h2>Leaderboard</h2>
         </div>
         <div class="link-ref">
-            <a href="dashboard_student.php">
-                <p>Home</p>
-            </a>
-            <a href="leaderboard.php">
-                <p>🏆 Leaderboard</p>
-            </a>
-            <a href="edit_profile.php">
-                <p>Edit Profile</p>
-            </a>
-            <a href="student_history.php">
-                <p>History</p>
+            <div><a href="dashboard_student.php">Home</a></div>
+            <div><a href="leaderboard.php">Leaderboard</a></div>
+            <div><a href="edit_profile.php">Edit Profile</a></div>
+            <div><a href="student_history.php">History</a></div>
+            <!-- ✅ NOTIFICATION BELL -->
+            <?php
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM notifications WHERE student_id = ? AND is_read = 0");
+            $stmt->execute([$_SESSION['user_id']]);
+            $unread_count = $stmt->fetchColumn();
+            ?>
+            <a href="notifications.php">
+                Notifications
+                <?php if ($unread_count > 0): ?>
+                    <span style="position:absolute; top:-8px; right:-10px; background:#dc3545; color:white; border-radius:50%; padding:2px 6px; font-size:0.7rem; font-weight:bold;">
+                        <?= $unread_count > 9 ? '9+' : $unread_count ?>
+                    </span>
+                <?php endif; ?>
             </a>
             <button class="btn btn-primary" data-modal-open="reservationModal">🖥️ Reserve a PC</button>
-            <button class="logout-button" onclick="window.location.href='logout.php';">Log out</button>
+            <button class="logout-button" type="button" onclick="window.location.href='logout.php';">Log out</button>
         </div>
     </div>
 

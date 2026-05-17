@@ -46,6 +46,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare("UPDATE students SET reward_points = ?, remaining_session = ?, total_rewards_earned = ? WHERE id = ?");
         $stmt->execute([$new_points, $new_sessions, $total_rewards, $student_id]);
 
+        // ✅ INSERT NOTIFICATION FOR STUDENT (Safe inside transaction)
+        $notif_title = ($new_points === 0) ? 'Session Awarded!' : 'Reward Point Added';
+        $notif_msg   = ($new_points === 0)
+            ? "Congratulations! Your 3 reward points converted into +1 free session."
+            : "You earned +1 reward point! Collect 3 points total to get a free session.";
+
+        $stmt_notif = $pdo->prepare("INSERT INTO notifications (student_id, title, message, type) VALUES (?, ?, ?, 'reward')");
+        $stmt_notif->execute([$student_id, $notif_title, $notif_msg]);
+
         $pdo->commit();
         $_SESSION['success'] = $message;
     } catch (Exception $e) {

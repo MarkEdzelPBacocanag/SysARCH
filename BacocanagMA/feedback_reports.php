@@ -11,14 +11,27 @@ if (($_SESSION['role'] ?? '') !== 'admin') {
 // 2. Handle Status Update (Mark Resolved/Re-open)
 if (isset($_POST['update_status']) && isset($_POST['feedback_id'])) {
     $fid = $_POST['feedback_id'];
-    $newStatus = $_POST['status'] === 'resolved' ? 'pending' : 'resolved'; // Toggle logic
+    $newStatus = $_POST['status'] === 'resolved' ? 'pending' : 'resolved';
+
     try {
+        // 1. Get the student ID who sent the feedback
+        $stmt = $pdo->prepare("SELECT student_id FROM feedbacks WHERE id = ?");
+        $stmt->execute([$fid]);
+        $fb_student = $stmt->fetch();
+
+        // 2. Update status
         $stmt = $pdo->prepare("UPDATE feedbacks SET status = ? WHERE id = ?");
         $stmt->execute([$newStatus, $fid]);
-        $_SESSION['success'] = 'Feedback status updated.';
+
+        // 3. Create Notification
+        if ($fb_student) {
+            $status_text = $newStatus === 'resolved' ? 'marked as Resolved' : 're-opened for review';
+            $stmt = $pdo->prepare("INSERT INTO notifications (student_id, title, message, type) VALUES (?, ?, ?, 'feedback')");
+            $stmt->execute([$fb_student['student_id'], "📝 Feedback Update", "Your feedback has been $status_text."]);
+        }
     } catch (PDOException $e) {
-        $_SESSION['error'] = 'Error updating status.';
     }
+
     header('Location: feedback_reports.php');
     exit;
 }
@@ -50,7 +63,7 @@ unset($_SESSION['success'], $_SESSION['error']);
     <!-- NAVIGATION BAR -->
     <div class="container-nav">
         <div style="padding-left: 3rem;">
-            <h2>Student Feedback Reports</h2>
+            <h2>Student Feedback</h2>
         </div>
         <div class="link-ref">
             <div><a href="dashboard_admin.php">
@@ -59,11 +72,11 @@ unset($_SESSION['success'], $_SESSION['error']);
             <div><a href="student.php">
                     <p>Students</p>
                 </a></div>
-            <div class="dropdown">
+            <div class="dropdown" style="margin: 0; padding: 0;">
                 <span>Sit-in ▾</span>
                 <ul class="dropdown-content">
                     <li><a data-modal-open="sitinModal">Add Sit-in</a></li>
-                    <li><a href="sitin_records.php">View Sit-in Records</a></li>
+                    <li><a href="sitin_records.php">Sit-in Records</a></li>
                     <li><a href="sitin_reports.php">Sit-in Reports</a></li>
                 </ul>
             </div>
@@ -85,7 +98,6 @@ unset($_SESSION['success'], $_SESSION['error']);
 
     <!-- MAIN CONTENT -->
     <div class="page-container">
-        <h1 class="page-title">Student Feedback</h1>
         <table class="data-table">
             <thead>
                 <tr>

@@ -8,8 +8,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 if (($_SESSION['role'] ?? '') !== 'admin') {
-    // If a student tries to access admin dashboard, send them to student dashboard
-    header("Location: dashboard_student.php");
+    header("Location: index.php");
     exit;
 }
 
@@ -119,9 +118,6 @@ unset($_SESSION['success'], $_SESSION['error']);
             <a href="dashboard_admin.php">
                 <p>Home</p>
             </a>
-            <a href="search_results.php">
-                <p>Search</p>
-            </a>
             <a href="student.php">
                 <p>Students</p>
             </a>
@@ -129,7 +125,7 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <span>Sit-in ▾</span>
                 <ul class="dropdown-content">
                     <li><a data-modal-open="sitinModal">Add Sit-in</a></li>
-                    <li><a href="sitin_records.php">View Sit-in Records</a></li>
+                    <li><a href="sitin_records.php">Sit-in Records</a></li>
                     <li><a href="sitin_reports.php">Sit-in Reports</a></li>
                 </ul>
             </div>
@@ -213,12 +209,9 @@ unset($_SESSION['success'], $_SESSION['error']);
                                 <div class="announcement-content">
                                     <?php echo nl2br(htmlspecialchars($announcement['content'])); ?>
                                 </div>
-                                <div style="margin-top: 8px;">
-                                    <a href="delete_announcement.php?id=<?= $announcement['id'] ?>"
-                                        style="color: #dc3545; font-size: 0.85rem; text-decoration: none;"
-                                        onclick="return confirm('Delete this announcement?')">
-                                        🗑️ Delete
-                                    </a>
+                                <div style="align-items: center; margin-top: 8px; display: flex; gap: 10px;">
+                                    <button type="button" class="btn-edit" onclick="openEditAnnouncementModal(<?= $announcement['id'] ?>, `<?= addslashes($announcement['content']) ?>`)">✏️ Edit</button>
+                                    <a href="delete_announcement.php?id=<?= $announcement['id'] ?>" style="color: #dc3545; font-size: 0.85rem; text-decoration: none;" onclick="return confirm('Delete this announcement?')">🗑️ Delete</a>
                                 </div>
                             </div>
                         <?php endforeach; ?>
@@ -283,6 +276,26 @@ unset($_SESSION['success'], $_SESSION['error']);
                 <div class="modal-actions">
                     <button type="button" class="btn btn-secondary" data-modal-close>Close</button>
                     <button type="submit" class="btn btn-primary">Sit In</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- EDIT ANNOUNCEMENT MODAL -->
+    <div class="modal" id="editAnnouncementModal" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>✏️ Edit Announcement</h3>
+                <button type="button" class="modal-close" data-modal-close>&times;</button>
+            </div>
+            <form class="modal-body" method="POST" action="edit_announcement.php">
+                <input type="hidden" id="editAnnId" name="id">
+                <div class="field-group">
+                    <label for="editAnnContent">Content:</label>
+                    <textarea id="editAnnContent" name="content" rows="4" required></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-modal-close>Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -399,6 +412,12 @@ unset($_SESSION['success'], $_SESSION['error']);
                     console.error('Error fetching student:', err);
                 }
             });
+        }
+
+        function openEditAnnouncementModal(id, content) {
+            document.getElementById('editAnnId').value = id;
+            document.getElementById('editAnnContent').value = content;
+            openModal('editAnnouncementModal');
         }
     </script>
 </body>

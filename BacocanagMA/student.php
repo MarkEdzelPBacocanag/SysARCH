@@ -111,23 +111,20 @@ $students = $stmt->fetchAll();
     <!-- NAVIGATION BAR -->
     <div class="container-nav">
         <div style="padding-left: 3rem;">
-            <h2>College of Computer Studies Admin</h2>
+            <h2>Student Informations</h2>
         </div>
         <div class="link-ref">
             <a href="dashboard_admin.php">
                 <p>Home</p>
             </a>
-            <a href="search_results.php">
-                <p>Search</p>
-            </a>
             <a href="student.php">
                 <p>Students</p>
             </a>
-            <div class="dropdown">
+            <div class="dropdown" style="margin: 0; padding: 0;">
                 <span>Sit-in ▾</span>
                 <ul class="dropdown-content">
                     <li><a data-modal-open="sitinModal">Add Sit-in</a></li>
-                    <li><a href="sitin_records.php">View Sit-in Records</a></li>
+                    <li><a href="sitin_records.php">Sit-in Records</a></li>
                     <li><a href="sitin_reports.php">Sit-in Reports</a></li>
                 </ul>
             </div>
@@ -142,8 +139,6 @@ $students = $stmt->fetchAll();
     </div>
     <!-- MAIN CONTENT -->
     <div class="page-container">
-        <h1 class="page-title">Students Information</h1>
-
         <!-- TOAST NOTIFICATIONS -->
         <div class="toast-container">
             <?php if ($success): ?><div class="toast success"><?= htmlspecialchars($success) ?></div><?php endif; ?>

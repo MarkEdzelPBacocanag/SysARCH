@@ -41,15 +41,30 @@ unset($_SESSION['success'], $_SESSION['error']);
 <body>
     <div class="container-nav">
         <div style="padding-left: 3rem;">
-            <h2>Sit-in Sessions</h2>
+            <h2>Student Sit-in Records</h2>
         </div>
         <div class="link-ref">
-            <div><a href="dashboard_admin.php">
-                    <p>Back to Dashboard</p>
-                </a></div>
-            <div><a href="reservation.php">
-                    <p>Reservations</p>
-                </a></div>
+            <a href="dashboard_admin.php">
+                <p>Home</p>
+            </a>
+            <a href="student.php">
+                <p>Students</p>
+            </a>
+            <div class="dropdown" style="margin: 0; padding: 0;">
+                <span>Sit-in ▾</span>
+                <ul class="dropdown-content">
+                    <li><a data-modal-open="sitinModal">Add Sit-in</a></li>
+                    <li><a href="sitin_records.php">Sit-in Records</a></li>
+                    <li><a href="sitin_reports.php">Sit-in Reports</a></li>
+                </ul>
+            </div>
+            <a href="feedback_reports.php">
+                <p>Feedback</p>
+            </a>
+            <a href="reservation.php">
+                <p>Reservations</p>
+            </a>
+            <button class="logout-button" onclick="window.location.href='logout.php';">Log out</button>
         </div>
     </div>
 

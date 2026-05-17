@@ -20,12 +20,6 @@ unset($_SESSION['errors'], $_SESSION['old']);
             <h2>College of Computer Studies</h2>
         </div>
         <div class="link-ref">
-            <div><a href="#">
-                    <p>Community</p>
-                </a></div>
-            <div><a href="#">
-                    <p>About</p>
-                </a></div>
             <div><a href="index.php">
                     <p>Login</p>
                 </a></div>
@@ -40,7 +34,7 @@ unset($_SESSION['errors'], $_SESSION['old']);
                 <!-- ID -->
                 <div class="field-group">
                     <label for="id">ID Number:</label>
-                    <input type="text" id="id" name="id" value="<?= htmlspecialchars($old['id'] ?? '') ?>" required>
+                    <input type="text" id="id" name="id" value="<?= htmlspecialchars($old['id'] ?? '') ?>" required minlength="8" maxlength="8">
                     <?php if (!empty($errors['id'])): ?><span class="error-bubble"><?= htmlspecialchars($errors['id']) ?></span><?php endif; ?>
                 </div>
 

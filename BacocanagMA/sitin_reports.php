@@ -65,10 +65,30 @@ $reports = $stmt->fetchAll();
 <body>
     <div class="container-nav">
         <div style="padding-left: 3rem;">
-            <h2>Sit-in Reports</h2>
+            <h2>Student Feedback Reports</h2>
         </div>
         <div class="link-ref">
-            <div><a href="dashboard_admin.php">Back to Dashboard</a></div>
+            <div><a href="dashboard_admin.php">
+                    <p>Home</p>
+                </a></div>
+            <div><a href="student.php">
+                    <p>Students</p>
+                </a></div>
+            <div class="dropdown" style="margin: 0; padding: 0;">
+                <span>Sit-in ▾</span>
+                <ul class="dropdown-content">
+                    <li><a data-modal-open="sitinModal">Add Sit-in</a></li>
+                    <li><a href="sitin_records.php">Sit-in Records</a></li>
+                    <li><a href="sitin_reports.php">Sit-in Reports</a></li>
+                </ul>
+            </div>
+            <div><a href="feedback_reports.php">
+                    <p>Feedback</p>
+                </a></div>
+            <div><a href="reservation.php">
+                    <p>Reservations</p>
+                </a></div>
+            <button class="logout-button" onclick="window.location.href='logout.php';">Log out</button>
         </div>
     </div>
 

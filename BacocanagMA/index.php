@@ -45,23 +45,17 @@ unset($_SESSION['errors'], $_SESSION['old']);
                         <span class="error-bubble"><?= htmlspecialchars($errors['password']) ?></span>
                     <?php endif; ?>
                 </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <div style="display: inline-flex; align-items: center; gap: 0.5rem;">
-                        <input type="checkbox" id="remember-me" name="remember-me">
-                        <label for="remember-me">Remember me</label>
-                    </div>
-                    <a href="#">Forgot password?</a>
-                </div>
-                <div style="display: flex; flex-direction: column;">
+                <div style="display: flex; flex-direction: column; margin-top: 2rem;">
                     <div style="display: flex; justify-content: center;">
                         <button class="login-btn" type="submit">Login</button>
                     </div>
-                    <div style="display: inline-flex; justify-content: space-between; margin-top: .5rem;">
+                    <br>
+                    <div style="display: inline-flex; justify-content: space-between; align-items: center;">
                         <div>
                             <p>Don't have an account?</p>
                         </div>
                         <div>
-                            <button class="register-btn" type="button" onclick="window.location.href='register.php'">Register</button>
+                            <a href="register.php">Register</a>
                         </div>
                     </div>
             </form>
