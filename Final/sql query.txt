@@ -1,0 +1,110 @@
+-- 1. Create the Database
+CREATE DATABASE IF NOT EXISTS mydatabest;
+USE mydatabest;
+
+-- 2. Create Tables
+
+-- Table: Students
+CREATE TABLE IF NOT EXISTS students (
+    id VARCHAR(20) PRIMARY KEY,
+    fname VARCHAR(100) NOT NULL,
+    lname VARCHAR(100) NOT NULL,
+    mname VARCHAR(100) DEFAULT NULL,
+    email VARCHAR(100) UNIQUE,
+    course VARCHAR(50) NOT NULL,
+    course_level INT NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    address TEXT,
+    role ENUM('admin', 'student') DEFAULT 'student',
+    remaining_session INT DEFAULT 30,
+    reward_points INT DEFAULT 0,
+    tasks_completed INT DEFAULT 0,
+    total_rewards_earned INT DEFAULT 0,
+    profile_picture VARCHAR(255) DEFAULT 'default_profile.png',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Table: Sit-in Records
+CREATE TABLE IF NOT EXISTS sitin_records (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(20) NOT NULL,
+    purpose VARCHAR(100) NOT NULL,
+    lab VARCHAR(50) NOT NULL,
+    pc_number VARCHAR(50) NOT NULL,
+    date_created DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_ended DATETIME DEFAULT NULL,
+    end_time TIME DEFAULT NULL,
+    extension_count INT DEFAULT 0,
+    status ENUM('pending', 'active', 'completed') DEFAULT 'pending',
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Table: Reservations
+-- Note: Includes start_time and end_time for accurate overlap checking
+CREATE TABLE IF NOT EXISTS reservations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(20) NOT NULL,
+    lab VARCHAR(50) NOT NULL,
+    pc_number VARCHAR(50) NOT NULL,
+    purpose VARCHAR(100) NOT NULL,
+    reservation_datetime DATETIME NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    remaining_session INT DEFAULT 30,
+    status ENUM('pending', 'confirmed', 'declined') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Table: Notifications
+CREATE TABLE IF NOT EXISTS notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(20) NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    message TEXT,
+    type VARCHAR(50) DEFAULT 'info',
+    is_read TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- Table: Feedbacks
+CREATE TABLE IF NOT EXISTS feedbacks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(20) NOT NULL,
+    record_id INT NOT NULL,
+    message TEXT,
+    status ENUM('pending', 'resolved') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    FOREIGN KEY (record_id) REFERENCES sitin_records(id) ON DELETE CASCADE
+);
+
+-- Table: Announcements
+CREATE TABLE IF NOT EXISTS announcements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id VARCHAR(20) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES students(id) ON DELETE CASCADE
+);
+
+-- 3. Optional: Insert Default Admin Account
+-- (Only run this if you don't have an admin account yet. 
+--  The password below is 'admin123')
+INSERT INTO students (id, fname, lname, email, course, course_level, password, address, role, remaining_session) 
+VALUES ('admin001', 'Admin', 'User', 'admin@ccs.edu', 'ADMIN', 0, '$2y$10$g4bx6xqVT13ciFvz3xhAIeoqNkCFMWpBue63/xrC.DSJenaVdhD2a', 'Admin Office', 'admin', 999)
+ON DUPLICATE KEY UPDATE id=id;
+
+-- 4. Cleanup Query (Optional)
+-- This removes duplicate pending reservations if they exist from previous bugs
+DELETE r1 FROM reservations r1
+INNER JOIN reservations r2 
+WHERE r1.id > r2.id 
+AND r1.student_id = r2.student_id 
+AND r1.lab = r2.lab 
+AND r1.pc_number = r2.pc_number 
+AND r1.start_time = r2.start_time 
+AND r1.end_time = r2.end_time 
+AND r1.reservation_datetime = r2.reservation_datetime
+AND r1.status = 'pending';

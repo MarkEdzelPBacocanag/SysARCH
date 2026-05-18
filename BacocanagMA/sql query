@@ -1,0 +1,105 @@
+
+CREATE DATABASE IF NOT EXISTS mydatabest 
+CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE mydatabest;
+
+-- 1. STUDENTS & ADMINS TABLE
+CREATE TABLE students (
+    id VARCHAR(50) PRIMARY KEY,
+    fname VARCHAR(100) NOT NULL,
+    lname VARCHAR(100) NOT NULL,
+    mname VARCHAR(100) DEFAULT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    course VARCHAR(50) NOT NULL,
+    course_level INT NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    role ENUM('student', 'admin') DEFAULT 'student',
+    profile_picture VARCHAR(255) DEFAULT 'default_profile.png',
+    remaining_session INT UNSIGNED DEFAULT 30,
+    reward_points INT UNSIGNED DEFAULT 0,
+    total_rewards_earned INT UNSIGNED DEFAULT 0,
+    tasks_completed INT UNSIGNED DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_email (email),
+    INDEX idx_role (role)
+) ENGINE=InnoDB;
+
+-- 2. SIT-IN RECORDS TABLE
+CREATE TABLE sitin_records (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(50) NOT NULL,
+    purpose VARCHAR(100) NOT NULL,
+    lab VARCHAR(50) NOT NULL,
+    pc_number VARCHAR(20) DEFAULT NULL,
+    date_created DATETIME DEFAULT CURRENT_TIMESTAMP,
+    date_ended DATETIME DEFAULT NULL,
+    end_time TIME DEFAULT NULL,
+    status ENUM('pending', 'active', 'completed') DEFAULT 'pending',
+    extension_count INT UNSIGNED DEFAULT 0,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_student_status (student_id, status),
+    INDEX idx_lab_pc_date (lab, pc_number, date_created)
+) ENGINE=InnoDB;
+
+-- 3. RESERVATIONS TABLE
+CREATE TABLE reservations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(50) NOT NULL,
+    lab VARCHAR(50) NOT NULL,
+    pc_number VARCHAR(20) NOT NULL,
+    purpose VARCHAR(100) NOT NULL,
+    reservation_datetime DATETIME NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    remaining_session INT UNSIGNED DEFAULT 30,
+    status ENUM('pending', 'confirmed', 'declined') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_student_status_date (student_id, status, reservation_datetime),
+    INDEX idx_lab_pc_status_date (lab, pc_number, status, DATE(reservation_datetime))
+) ENGINE=InnoDB;
+
+-- 4. ANNOUNCEMENTS TABLE
+CREATE TABLE announcements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id VARCHAR(50) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES students(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_created_at (created_at)
+) ENGINE=InnoDB;
+
+-- 5. FEEDBACKS TABLE
+CREATE TABLE feedbacks (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(50) NOT NULL,
+    record_id INT NOT NULL,
+    message TEXT NOT NULL,
+    status ENUM('pending', 'resolved') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (record_id) REFERENCES sitin_records(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_student_status (student_id, status)
+) ENGINE=InnoDB;
+
+-- 6. NOTIFICATIONS TABLE
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id VARCHAR(50) NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    message TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'general',
+    is_read TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX idx_student_read_date (student_id, is_read, created_at)
+) ENGINE=InnoDB;
+
+-- ==========================================
+-- SEED DATA: DEFAULT ADMIN ACCOUNT
+-- Password: admin123 (hashed with password_hash())
+-- ==========================================
+INSERT INTO students (id, fname, lname, email, password, course, course_level, address, role, remaining_session)
+VALUES ('ADMIN001', 'System', 'Administrator', 'admin@ccs.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'N/A', 0, 'Computer Lab', 'admin', 999)
+ON DUPLICATE KEY UPDATE id=id;
